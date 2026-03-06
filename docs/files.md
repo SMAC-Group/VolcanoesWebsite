@@ -8,12 +8,12 @@
 
 Application entry point. Defines the 3-column layout:
 
-- **Header**: logo, 2D/3D toggle, action buttons (Import, Add, Export, Contribute)
+- **Header**: logo, 2D/3D toggle, action buttons (Import, Add, Manage, Export, Contribute)
 - **Left panel** (`panel-left`): X/Y/Z axis selectors, color selector, "Invert Y" checkbox, volcano filter with search
 - **Main area** (`main-area`): toolbar (lasso, rectangle, pan, reset, ellipses, labels) + `#plotDiv` (Plotly container)
 - **Right panel** (`panel-right`): selected point detail, selection statistics, selected points list, clear selection button
 
-Also contains 4 modals (overlays): CSV upload, manual entry, export, contribution.
+Also contains 5 modals (overlays): CSV upload, manual entry, manage user data, export, contribution.
 
 Loads Plotly.js 2.27.0 via CDN and Google Fonts (Syne + Space Mono).
 

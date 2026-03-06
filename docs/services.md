@@ -21,6 +21,7 @@ Facade that delegates to the active backend based on `CONFIG.backend`.
 | `getUserData()` | User data (localStorage or API) |
 | `saveUserData(rows)` | Saves user data |
 | `appendUserData(newRows)` | Appends rows to user data |
+| `deleteUserDataRow(index)` | Deletes a single user data row by index |
 | `clearUserData()` | Deletes all user data |
 | `hasUserData()` | Checks if user data exists |
 | `userDataSizeKB()` | User data size in KB |

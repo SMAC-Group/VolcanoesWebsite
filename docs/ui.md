@@ -32,7 +32,11 @@ Left panel: axis selectors and volcano filter.
 
 **Layout**: dark theme, lasso dragmode by default, scrollZoom enabled, no visible modebar.
 
+**Middle-click pan**: a custom handler (`_attachMiddlePan`) enables panning with the middle mouse button regardless of the current dragmode. This keeps left-click for the active tool (lasso/rect/pan) while middle-click always pans. During middle-click drag, the Pan toolbar button is visually highlighted; on release, the highlight returns to the previously active tool (read from Plotly's `dragmode`). A hint label in the 2D toolbar reminds the user of this shortcut.
+
 **Internal functions**:
+- `_attachMiddlePan(el)` — wires mousedown/mousemove/mouseup for middle-button panning
+- `_setToolbarHighlight(mode, active)` — toggles toolbar button highlights during middle-click pan
 - `_groupBy(rows, col)` — groups rows by column value
 - `_tooltip(row)` — generates tooltip HTML (meta + main axes)
 - `_hexToRgba(hex, a)` — converts hex color to rgba
@@ -73,7 +77,7 @@ Right panel: selection details and statistics.
 
 ## `js/ui/modals.js`
 
-Manages the 4 application modals.
+Manages the 5 application modals.
 
 ### CSV Upload (`modalUpload`)
 - Drag & drop zone + click to browse
@@ -95,3 +99,10 @@ Manages the 4 application modals.
 - Name and email fields
 - Summary of user data in cache
 - "Download & Send" button: generates CSV, downloads it, shows contact email
+
+### Manage User Data (`modalManage`)
+- Lists all user-added points in a table (first 6 columns displayed)
+- Each row has a "Delete" button to remove that individual point via `API.deleteUserDataRow(index)`
+- "Delete all" button clears all user data (with confirmation)
+- Table and info text rebuild after each deletion
+- Emits `EVT.DATA_UPDATED` after changes so the chart and UI refresh

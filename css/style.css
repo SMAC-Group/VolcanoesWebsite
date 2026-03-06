@@ -121,7 +121,7 @@ select.axis-pick:focus { border-color: var(--accent); }
 .toolbar-btn.active { border-color: var(--accent); color: var(--accent); background: #1a0a05; }
 .toolbar-sep { width: 1px; height: 18px; background: var(--border); margin: 0 3px; }
 .toolbar-info { margin-left: auto; font-size: 0.63rem; color: var(--muted); }
-.hint-3d { background: #0d1a22; border: 1px solid #1a3a50; border-radius: 4px; padding: 5px 12px; font-size: 0.62rem; color: #4a9fc0; white-space: nowrap; }
+.hint-3d, .hint-2d { background: #0d1a22; border: 1px solid #1a3a50; border-radius: 4px; padding: 5px 12px; font-size: 0.62rem; color: #4a9fc0; white-space: nowrap; }
 
 #plotDiv { flex: 1; min-height: 0; }
 

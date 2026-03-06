@@ -89,6 +89,11 @@ async function init() {
         if (e.key === 'Escape') Selection.clearAll();
     });
 
+    // Prevent default middle-click auto-scroll on the plot
+    document.getElementById('plotDiv')?.addEventListener('mousedown', (e) => {
+        if (e.button === 1) e.preventDefault();
+    });
+
     Events.emit(EVT.DATA_LOADED);
 }
 

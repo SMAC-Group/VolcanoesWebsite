@@ -7,6 +7,7 @@ import * as Selection from '../selection.js';
 
 const CHART_ID = 'plotDiv';
 let _bindingsAttached = false;
+let _midPan = null;
 
 export function render(rows, xCol, yCol, colorCol, { invertY = false, showEllipses = true, showLabels = false } = {}) {
     const t = CONFIG.theme;
@@ -130,6 +131,69 @@ export function render(rows, xCol, yCol, colorCol, { invertY = false, showEllips
         if (!evt?.points) return;
         Selection.selectMultiple(evt.points.map(p => p.customdata));
     });
+
+    // Middle-click pan
+    _attachMiddlePan(el);
+}
+
+function _attachMiddlePan(el) {
+    const plotArea = el.querySelector('.draglayer') || el;
+
+    plotArea.addEventListener('mousedown', (e) => {
+        if (e.button !== 1) return; // middle button only
+        e.preventDefault();
+        const xaxis = el._fullLayout.xaxis;
+        const yaxis = el._fullLayout.yaxis;
+        _midPan = {
+            startX: e.clientX,
+            startY: e.clientY,
+            xRange: [xaxis.range[0], xaxis.range[1]],
+            yRange: [yaxis.range[0], yaxis.range[1]],
+            pxPerX: (xaxis._length) / (xaxis.range[1] - xaxis.range[0]),
+            pxPerY: (yaxis._length) / (yaxis.range[1] - yaxis.range[0]),
+        };
+        // Highlight Pan button in toolbar
+        _setToolbarHighlight('pan', true);
+    });
+
+    window.addEventListener('mousemove', (e) => {
+        if (!_midPan) return;
+        const dx = (e.clientX - _midPan.startX) / _midPan.pxPerX;
+        const dy = (e.clientY - _midPan.startY) / _midPan.pxPerY;
+        Plotly.relayout(el, {
+            'xaxis.range[0]': _midPan.xRange[0] - dx,
+            'xaxis.range[1]': _midPan.xRange[1] - dx,
+            'yaxis.range[0]': _midPan.yRange[0] + dy,
+            'yaxis.range[1]': _midPan.yRange[1] + dy,
+        });
+    });
+
+    window.addEventListener('mouseup', (e) => {
+        if (e.button === 1 && _midPan) {
+            _midPan = null;
+            // Restore previous tool highlight
+            _setToolbarHighlight('pan', false);
+        }
+    });
+}
+
+function _setToolbarHighlight(mode, active) {
+    const btnMap = { lasso: 'tb-lasso', select: 'tb-select', pan: 'tb-pan' };
+    if (active) {
+        // Remember which buttons are currently active, then highlight pan
+        ['lasso', 'select', 'pan'].forEach(t => {
+            const btn = document.getElementById(btnMap[t]);
+            if (btn) btn.classList.toggle('active', t === mode);
+        });
+    } else {
+        // Restore: read Plotly's current dragmode to know the real active tool
+        const el = document.getElementById(CHART_ID);
+        const currentMode = el?._fullLayout?.dragmode || 'lasso';
+        ['lasso', 'select', 'pan'].forEach(t => {
+            const btn = document.getElementById(btnMap[t]);
+            if (btn) btn.classList.toggle('active', t === currentMode);
+        });
+    }
 }
 
 function _groupBy(rows, col) {
