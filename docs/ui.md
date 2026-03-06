@@ -28,7 +28,7 @@ Left panel: axis selectors and volcano filter.
 3. Creates 2 traces: base data (triangles) and user data (green circles)
 4. If `showEllipses`: computes confidence ellipses (~1.9 sigma) per group (min 5 points) with semi-transparent fill
 5. If `showLabels`: adds the group name below each ellipse
-6. Wires `plotly_click` → `Selection.toggle()` and `plotly_selected` → `Selection.selectMultiple()`
+6. Wires `plotly_click` → emits `EVT.POINT_CLICKED` (shows detail) and `plotly_selected` → `Selection.selectMultiple()`
 
 **Layout**: dark theme, lasso dragmode by default, scrollZoom enabled, no visible modebar.
 
@@ -52,7 +52,7 @@ Left panel: axis selectors and volcano filter.
 1. Filters valid rows for X, Y, and Z
 2. Creates base + user traces (same logic as 2D)
 3. Computes **centroids** per group: average X/Y/Z position, displayed as open circles with labels
-4. Wires `plotly_click` → `Selection.toggle()`
+4. Wires `plotly_click` → emits `EVT.POINT_CLICKED` (shows detail)
 
 No lasso/rectangle in 3D (Plotly limitation). Interaction is via orbit (drag), pan (Shift+drag), and zoom (scroll).
 
@@ -65,13 +65,20 @@ Right panel: selection details and statistics.
 **`updateSelectionInfo(selectedSet, allRows)`**
 - Updates counters (number of selected points)
 - Computes Temperature and Pressure averages for the selection
-- Displays the first 20 selected points (name + value)
+- Displays up to 50 selected points as clickable items in the selection list
+- Clicking an item calls `showPointDetailByIndex()` to display its detail
 - If no points selected: shows an empty state message
 
-**`showPointDetail(row)`**
-- Displays a detail card for a single point
-- Shows the Reference as title, "YOU" tag if it's user data
-- Lists all configured columns with their values
+**`showPointDetailByIndex(index)`**
+- Looks up the row by index in `API.getAllRows()`
+- Displays a detail card for the point (Reference as title, "YOU" tag if user data, all configured columns)
+- If a multi-selection is active, shows a "Back to selection" button that restores the empty detail view (the selection list remains visible below)
+
+**Interaction flow**:
+1. **Single click** on a chart point → shows detail directly in the "Selected point" section
+2. **Lasso/rectangle selection** → populates the selection list with clickable items + stats
+3. **Click an item** in the selection list → shows its detail with a "Back to selection" button
+4. **Click "Back"** → returns to the empty detail state (selection list stays)
 
 ---
 

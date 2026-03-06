@@ -26,4 +26,5 @@ export const EVT = {
     VIEW_CHANGED: 'view:changed',
     FILTER_CHANGED: 'filter:changed',
     AXES_CHANGED: 'axes:changed',
+    POINT_CLICKED: 'point:clicked',
 };

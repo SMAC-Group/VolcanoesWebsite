@@ -4,6 +4,7 @@
 import { CONFIG } from '../config.js';
 import * as Columns from '../columns.js';
 import * as Selection from '../selection.js';
+import { Events, EVT } from '../events.js';
 
 const CHART_ID = 'plotDiv';
 let _bindingsAttached = false;
@@ -125,7 +126,7 @@ export function render(rows, xCol, yCol, colorCol, { invertY = false, showEllips
     el.removeAllListeners?.('plotly_selected');
     el.on('plotly_click', (evt) => {
         if (!evt.points.length) return;
-        Selection.toggle(evt.points[0].customdata);
+        Events.emit(EVT.POINT_CLICKED, evt.points[0].customdata);
     });
     el.on('plotly_selected', (evt) => {
         if (!evt?.points) return;

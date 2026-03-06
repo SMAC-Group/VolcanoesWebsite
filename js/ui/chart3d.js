@@ -4,6 +4,7 @@
 import { CONFIG } from '../config.js';
 import * as Columns from '../columns.js';
 import * as Selection from '../selection.js';
+import { Events, EVT } from '../events.js';
 
 const CHART_ID = 'plotDiv';
 
@@ -105,7 +106,7 @@ export function render(rows, xCol, yCol, zCol, colorCol, { showLabels = false } 
 
     document.getElementById(CHART_ID).on('plotly_click', (evt) => {
         if (!evt.points.length) return;
-        Selection.toggle(evt.points[0].customdata);
+        Events.emit(EVT.POINT_CLICKED, evt.points[0].customdata);
     });
 }
 

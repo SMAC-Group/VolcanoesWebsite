@@ -67,10 +67,16 @@ async function init() {
         });
     });
 
-    // Selection
+    // Selection (lasso / rectangle)
     Events.on(EVT.SELECTION_CHANGED, (selected) => {
         DetailPanel.updateSelectionInfo(selected, API.getAllRows());
     });
+
+    // Single point click → show detail
+    Events.on(EVT.POINT_CLICKED, (index) => {
+        DetailPanel.showPointDetailByIndex(index);
+    });
+
     document.getElementById('btnClearSelection')?.addEventListener('click', () => {
         Selection.clearAll();
         // Reset Plotly's visual selection highlight by re-rendering
