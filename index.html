@@ -85,6 +85,8 @@
                 <div class="toolbar-sep"></div>
                 <button class="toolbar-btn active" id="tb-ellipses">&#9678; Ellipses</button>
                 <button class="toolbar-btn" id="tb-labels">Aa Labels</button>
+                <div class="toolbar-sep"></div>
+                <button class="toolbar-btn" id="tb-correct" title="Drag user points to correct their position">&#9998; Correct</button>
             </span>
             <span id="tools3d" style="display:none;align-items:center;gap:7px">
                 <div class="hint-3d">&#10227; Orbiter &middot; Shift+drag Pan &middot; Scroll Zoom</div>
@@ -104,31 +106,46 @@
     <!-- RIGHT PANEL -->
     <div class="panel-right">
 
-        <div>
-            <div class="section-label">Selected point</div>
-            <div id="pointDetail"><div class="empty-state">Click on a point<br>to see its data</div></div>
-        </div>
+        <div id="selectionPanels">
+            <div>
+                <div class="section-label">Selected point</div>
+                <div id="pointDetail"><div class="empty-state">Click on a point<br>to see its data</div></div>
+            </div>
 
-        <div>
-            <div class="section-label">Selection statistics</div>
-            <div class="stats-row">
-                <div class="stat-box"><div class="sval" id="statN">&mdash;</div><div class="slabel">Points</div></div>
-                <div class="stat-box"><div class="sval" id="statT">&mdash;</div><div class="slabel" id="labelStatT">Avg X</div></div>
-                <div class="stat-box"><div class="sval" id="statP">&mdash;</div><div class="slabel" id="labelStatP">Avg Y</div></div>
+            <div>
+                <div class="section-label">Selection statistics</div>
+                <div class="stats-row">
+                    <div class="stat-box"><div class="sval" id="statN">&mdash;</div><div class="slabel">Points</div></div>
+                    <div class="stat-box"><div class="sval" id="statT">&mdash;</div><div class="slabel" id="labelStatT">Avg X</div></div>
+                    <div class="stat-box"><div class="sval" id="statP">&mdash;</div><div class="slabel" id="labelStatP">Avg Y</div></div>
+                </div>
+            </div>
+
+            <div>
+                <div class="section-label">Selection (<span id="selListCount">0</span>)</div>
+                <div class="selection-list" id="selectionList">
+                    <div class="empty-state">Use lasso or<br>rectangle (2D view)</div>
+                </div>
+            </div>
+
+            <div>
+                <div class="section-label">Actions</div>
+                <div class="control-group">
+                    <button class="btn" id="btnClearSelection">&#10005; Clear selection</button>
+                </div>
             </div>
         </div>
 
-        <div>
-            <div class="section-label">Selection (<span id="selListCount">0</span>)</div>
-            <div class="selection-list" id="selectionList">
-                <div class="empty-state">Use lasso or<br>rectangle (2D view)</div>
+        <div id="correctionPanel" style="display:none">
+            <div class="section-label">Corrections</div>
+            <div id="correctionInfo">
+                <div class="empty-state">Drag a user point<br>to correct its position</div>
             </div>
-        </div>
-
-        <div>
-            <div class="section-label">Actions</div>
-            <div class="control-group">
-                <button class="btn" id="btnClearSelection">&#10005; Clear selection</button>
+            <div class="control-group correction-actions">
+                <button class="btn" id="btnUndo" disabled>&#8630; Undo</button>
+                <button class="btn" id="btnRedo" disabled>&#8631; Redo</button>
+                <button class="btn btn-apply" id="btnApplyCorrections">&#10003; Apply</button>
+                <button class="btn btn-del" id="btnDiscardCorrections">&#10005; Discard</button>
             </div>
         </div>
 

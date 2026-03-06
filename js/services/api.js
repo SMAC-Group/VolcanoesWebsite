@@ -60,6 +60,13 @@ export function submitContribution(headers, meta) {
     return _backend().submitContribution(headers, meta);
 }
 
+// Convert a merged-array index to a user-data index (-1 if it's a base row)
+export function userDataIndexFromMerged(mergedIndex) {
+    const baseCount = getBaseRows().length;
+    const idx = mergedIndex - baseCount;
+    return idx >= 0 ? idx : -1;
+}
+
 // --- Derived helpers (backend-agnostic) ---
 
 // All rows merged (base + user), each tagged with _source

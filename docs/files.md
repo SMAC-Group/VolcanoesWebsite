@@ -127,6 +127,18 @@ Every change emits `EVT.SELECTION_CHANGED`.
 
 ---
 
+---
+
+## `js/ui/correction.js`
+
+Correction mode engine: allows dragging user points on the 2D chart to adjust their position.
+
+**Exports**: `enter(axes)`, `exit()`, `isActive()`, `reattach()`, `setAxes(axes)`, `undo()`, `redo()`, `getCorrections()`, `getCorrectionForIndex(idx)`, `clearAll()`, `applyToUserData()`, `patchRows(rows)`
+
+See [ui.md](ui.md) for full documentation.
+
+---
+
 ## Service files → see [services.md](services.md)
 
 ## UI files → see [ui.md](ui.md)

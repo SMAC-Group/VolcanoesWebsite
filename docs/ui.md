@@ -129,3 +129,39 @@ Manages the 5 application modals.
 - "Delete all" button clears all user data (with confirmation)
 - Table and info text rebuild after each deletion
 - Emits `EVT.DATA_UPDATED` after changes so the chart and UI refresh
+
+---
+
+## `js/ui/correction.js`
+
+Data correction engine: drag user points on the 2D chart to adjust their position.
+
+**Activation**: toggle via the "Correct" toolbar button (2D only). Entering correction mode disables lasso/select/pan tools and sets Plotly's dragmode to `false`. Exiting restores normal interaction.
+
+**Drag workflow**:
+1. In correction mode, mousedown on a user point (within 15px hit radius) starts a drag
+2. mousemove updates the point position in real-time via `Plotly.redraw()`
+3. mouseup commits the change and pushes an undo entry
+4. The correction panel in the right sidebar shows original vs corrected values
+
+**Inline editing**:
+1. After dragging a point, its corrected values appear in green in the correction panel
+2. Clicking on a green value converts it into an inline input (Unity-style click-to-edit)
+3. Modifying the value and pressing Enter (or clicking away) commits the change and updates the chart in real-time
+4. Pressing Escape cancels the edit
+5. Invalid (non-numeric) input is silently reverted
+
+**Undo/redo**: session-only in-memory stacks. Supports both drag actions (`type: 'drag'`, X + Y changes) and field edits (`type: 'field'`, single column change). Ctrl+Z / Ctrl+Y keyboard shortcuts supported. Undo restores previous value and updates both chart and edit form if open. If fully undone to original, the correction entry is removed.
+
+**Corrections map**: `Map<mergedIndex, { fields: { [colName]: { originalValue, newValue } } }>`. Used by `patchRows()` to apply corrections to rendered data when the chart re-renders during correction mode.
+
+**Apply/Discard**:
+- "Apply" writes corrected values into localStorage user data, then clears correction state and emits `EVT.DATA_UPDATED`
+- "Discard" clears all corrections and re-renders the chart with original values
+
+**Edge cases**:
+- Switching to 3D exits correction mode (corrections remain in memory)
+- Data update (upload/delete) exits correction mode and clears all corrections
+- Chart re-render during correction mode: `reattach()` re-binds mouse handlers, `patchRows()` ensures corrected positions are preserved
+
+**Events emitted**: `EVT.CORRECTION_MODE_CHANGED`, `EVT.POINT_CORRECTED`

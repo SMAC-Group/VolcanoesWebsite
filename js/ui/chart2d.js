@@ -221,3 +221,41 @@ function _hexToRgba(hex, a) {
     const b = parseInt(hex.slice(5, 7), 16);
     return `rgba(${r},${g},${b},${a})`;
 }
+
+// --- Exported helpers for correction mode ---
+
+export function getPlotElement() {
+    return document.getElementById(CHART_ID);
+}
+
+export function getUserTraceIndex() {
+    const el = document.getElementById(CHART_ID);
+    if (!el?.data) return -1;
+    return el.data.findIndex(t => t.name === 'Your data');
+}
+
+export function pixelToData(clientX, clientY) {
+    const el = document.getElementById(CHART_ID);
+    if (!el?._fullLayout) return null;
+    const xaxis = el._fullLayout.xaxis;
+    const yaxis = el._fullLayout.yaxis;
+    const rect = el.querySelector('.nsewdrag')?.getBoundingClientRect();
+    if (!rect) return null;
+    return {
+        x: xaxis.p2d(clientX - rect.left),
+        y: yaxis.p2d(clientY - rect.top),
+    };
+}
+
+export function dataToPixel(dataX, dataY) {
+    const el = document.getElementById(CHART_ID);
+    if (!el?._fullLayout) return null;
+    const xaxis = el._fullLayout.xaxis;
+    const yaxis = el._fullLayout.yaxis;
+    const rect = el.querySelector('.nsewdrag')?.getBoundingClientRect();
+    if (!rect) return null;
+    return {
+        px: xaxis.d2p(dataX) + rect.left,
+        py: yaxis.d2p(dataY) + rect.top,
+    };
+}

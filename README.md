@@ -9,6 +9,7 @@ Static web application for visualizing volcanic geochemical data (Temperature, P
 - **CSV Import**: drag & drop or browse, with preview and validation
 - **Manual Entry**: dynamic form based on CSV columns
 - **Manage Data**: view and delete user-added points individually or all at once
+- **Data Correction**: drag user points on the 2D chart to correct positions, with undo/redo
 - **Export / Contribute**: CSV download + submission instructions
 
 ## Tech Stack
@@ -61,6 +62,7 @@ VolcanoWebsite/
 │       ├── chart2d.js          # 2D Plotly chart (scattergl + ellipses)
 │       ├── chart3d.js          # 3D Plotly chart (scatter3d + centroids)
 │       ├── detail-panel.js     # Right panel: point detail, stats
+│       ├── correction.js       # Data correction: drag points, undo/redo
 │       └── modals.js           # Modals: upload, entry, manage, export, contribute
 ├── data/volcanoData.csv        # Main database
 └── docs/                       # Detailed documentation (see links above)

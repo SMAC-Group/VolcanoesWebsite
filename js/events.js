@@ -27,4 +27,6 @@ export const EVT = {
     FILTER_CHANGED: 'filter:changed',
     AXES_CHANGED: 'axes:changed',
     POINT_CLICKED: 'point:clicked',
+    CORRECTION_MODE_CHANGED: 'correction:modeChanged',
+    POINT_CORRECTED: 'correction:pointCorrected',
 };

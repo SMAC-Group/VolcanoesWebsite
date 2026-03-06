@@ -10,6 +10,7 @@ import * as Chart2D from './ui/chart2d.js';
 import * as Chart3D from './ui/chart3d.js';
 import * as DetailPanel from './ui/detail-panel.js';
 import * as Modals from './ui/modals.js';
+import * as Correction from './ui/correction.js';
 
 let currentView = '2d';
 let showEllipses = true;
@@ -56,6 +57,25 @@ async function init() {
     document.getElementById('tb-ellipses')?.addEventListener('click', toggleEllipses);
     document.getElementById('tb-labels')?.addEventListener('click', toggleLabels);
     document.getElementById('tb-labels3d')?.addEventListener('click', toggleLabels);
+    document.getElementById('tb-correct')?.addEventListener('click', toggleCorrectionMode);
+    document.getElementById('btnUndo')?.addEventListener('click', () => Correction.undo());
+    document.getElementById('btnRedo')?.addEventListener('click', () => Correction.redo());
+    document.getElementById('btnApplyCorrections')?.addEventListener('click', applyCorrections);
+    document.getElementById('btnDiscardCorrections')?.addEventListener('click', discardCorrections);
+
+    // Correction mode events
+    Events.on(EVT.CORRECTION_MODE_CHANGED, ({ active }) => {
+        document.getElementById('tb-correct')?.classList.toggle('correction-active', active);
+        const corrPanel = document.getElementById('correctionPanel');
+        const selPanels = document.getElementById('selectionPanels');
+        if (corrPanel) corrPanel.style.display = active ? '' : 'none';
+        if (selPanels) selPanels.style.display = active ? 'none' : '';
+        ['tb-lasso', 'tb-select', 'tb-pan'].forEach(id => {
+            const btn = document.getElementById(id);
+            if (btn) { btn.disabled = active; btn.style.opacity = active ? '0.3' : ''; }
+        });
+        if (!active) renderChart();
+    });
 
     // Header actions
     document.getElementById('btnContribute')?.addEventListener('click', () => Modals.openContribute());
@@ -107,8 +127,20 @@ async function init() {
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
-            Selection.clearAll();
-            renderChart();
+            if (Correction.isActive()) {
+                Correction.exit();
+            } else {
+                Selection.clearAll();
+                renderChart();
+            }
+        }
+        if (e.key === 'z' && (e.ctrlKey || e.metaKey) && Correction.isActive()) {
+            e.preventDefault();
+            e.shiftKey ? Correction.redo() : Correction.undo();
+        }
+        if (e.key === 'y' && (e.ctrlKey || e.metaKey) && Correction.isActive()) {
+            e.preventDefault();
+            Correction.redo();
         }
     });
 
@@ -124,8 +156,14 @@ async function init() {
 
 function renderChart() {
     const axes = Sidebar.getAxes();
-    const rows = _getFilteredRows();
+    let rows = _getFilteredRows();
     _updateTotalCount(rows.length);
+
+    // Apply pending corrections to rendered data
+    if (Correction.isActive()) {
+        Correction.setAxes({ x: axes.x, y: axes.y });
+        rows = Correction.patchRows(rows);
+    }
 
     if (currentView === '3d') {
         Chart3D.render(rows, axes.x, axes.y, axes.z, axes.color, { showLabels });
@@ -135,6 +173,7 @@ function renderChart() {
             showEllipses,
             showLabels,
         });
+        if (Correction.isActive()) Correction.reattach();
     }
 }
 
@@ -151,6 +190,7 @@ function _getFilteredRows() {
 }
 
 function setView(v) {
+    if (Correction.isActive()) Correction.exit();
     currentView = v;
     document.getElementById('btn2d')?.classList.toggle('active', v === '2d');
     document.getElementById('btn3d')?.classList.toggle('active', v === '3d');
@@ -158,6 +198,31 @@ function setView(v) {
     document.getElementById('tools3d').style.display = v === '3d' ? 'flex' : 'none';
     document.getElementById('zRow')?.classList.toggle('dimmed', v === '2d');
     Events.emit(EVT.VIEW_CHANGED, v);
+    renderChart();
+}
+
+function toggleCorrectionMode() {
+    if (currentView === '3d') return;
+    if (Correction.isActive()) {
+        Correction.exit();
+    } else {
+        Selection.clearAll();
+        const axes = Sidebar.getAxes();
+        Correction.enter({ x: axes.x, y: axes.y });
+        renderChart();
+    }
+}
+
+function applyCorrections() {
+    const count = Correction.applyToUserData();
+    if (count > 0) {
+        Events.emit(EVT.DATA_UPDATED);
+    }
+}
+
+function discardCorrections() {
+    Correction.clearAll();
+    Correction.exit();
     renderChart();
 }
 

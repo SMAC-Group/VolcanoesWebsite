@@ -27,6 +27,7 @@ Facade that delegates to the active backend based on `CONFIG.backend`.
 | `userDataSizeKB()` | User data size in KB |
 | `exportUserCSV(headers)` | Exports user data as CSV string |
 | `submitContribution(headers, meta)` | Prepares contribution CSV |
+| `userDataIndexFromMerged(idx)` | Converts merged-array index to user-data index (-1 if base row) |
 
 **Derived functions (backend-agnostic)**:
 | Function | Description |
