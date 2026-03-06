@@ -38,7 +38,7 @@ Left panel: axis selectors and volcano filter.
 
 1. Filters rows with valid values for X and Y
 2. Builds a color map by group (color column)
-3. Creates 2 traces: base data (triangles) and user data (green circles)
+3. Creates 2 traces: "Base data" (triangles, per-group colors) and "Your data" (green circles). Both appear in the Plotly legend at bottom-left for in-sample / out-of-sample distinction
 4. If `showEllipses`: computes confidence ellipses (~1.9 sigma) per group (min 5 points) with semi-transparent fill
 5. If `showLabels`: adds the group name below each ellipse
 6. Wires `plotly_click` → emits `EVT.POINT_CLICKED` (shows detail) and `plotly_selected` → `Selection.selectMultiple()`

@@ -38,7 +38,8 @@ export function render(rows, xCol, yCol, colorCol, { invertY = false, showEllips
             y: basePts.map(p => p[yCol]),
             customdata: basePts.map(p => p._idx),
             text: basePts.map(p => _tooltip(p)),
-            name: 'Data',
+            name: 'Base data',
+            legendrank: 1,
             mode: 'markers',
             type: 'scattergl',
             marker: {
@@ -59,6 +60,7 @@ export function render(rows, xCol, yCol, colorCol, { invertY = false, showEllips
             customdata: userPts.map(p => p._idx),
             text: userPts.map(p => _tooltip(p)),
             name: 'Your data',
+            legendrank: 2,
             mode: 'markers',
             type: 'scattergl',
             marker: {
@@ -89,6 +91,7 @@ export function render(rows, xCol, yCol, colorCol, { invertY = false, showEllips
                 x: th.map(a => mx + sx * Math.cos(a)),
                 y: th.map(a => my + sy * Math.sin(a)),
                 mode: 'lines', type: 'scatter', showlegend: false, hoverinfo: 'skip',
+                legendgroup: 'ellipses',
                 line: { color, width: 1.2, dash: 'dot' },
                 fill: 'toself',
                 fillcolor: _hexToRgba(color, 0.05),
@@ -97,11 +100,22 @@ export function render(rows, xCol, yCol, colorCol, { invertY = false, showEllips
             if (showLabels) {
                 traces.push({
                     x: [mx], y: [my - sy * 1.1],
-                    mode: 'text', type: 'scatter', showlegend: false, hoverinfo: 'skip',
+                    mode: 'text', type: 'scatter', showlegend: false, hoverinfo: 'skip', legendgroup: 'ellipses',
                     text: [name],
                     textfont: { color, size: 9, family: t.fontMono },
                 });
             }
+        });
+
+        // Single legend entry for ellipses
+        traces.push({
+            x: [null], y: [null],
+            mode: 'lines', type: 'scatter',
+            name: '~95% confidence',
+            legendgroup: 'ellipses',
+            legendrank: 10,
+            line: { color: t.muted, width: 1.2, dash: 'dot' },
+            hoverinfo: 'skip',
         });
     }
 
