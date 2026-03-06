@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VolcanInfos — Visualisation Interactive</title>
+    <title>VolcanInfos — Interactive Visualization</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.27.0/plotly.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
@@ -12,20 +12,20 @@
 
 <!-- Cache warning banner -->
 <div id="cacheWarning" class="cache-warning" style="display:none">
-    <span>&#9888; Des données locales sont stockées dans votre navigateur. Elles ne sont pas sauvegardées sur le serveur.</span>
+    <span>&#9888; Local data is stored in your browser. It is not saved on the server.</span>
 </div>
 
 <header>
     <div class="logo">Volcan<span>Infos</span></div>
     <div class="header-right">
         <div class="view-toggle">
-            <button class="view-btn active" id="btn2d">&#9639; Vue 2D</button>
-            <button class="view-btn" id="btn3d">&#9672; Vue 3D</button>
+            <button class="view-btn active" id="btn2d">&#9639; 2D View</button>
+            <button class="view-btn" id="btn3d">&#9672; 3D View</button>
         </div>
-        <button class="pill" id="btnUpload">&#8679; Importer CSV</button>
-        <button class="pill" id="btnAddManual">&#8853; Ajouter</button>
-        <button class="pill" id="btnExport">&#8615; Exporter</button>
-        <button class="pill" id="btnContribute">&#9993; Contribuer</button>
+        <button class="pill" id="btnUpload">&#8679; Import CSV</button>
+        <button class="pill" id="btnAddManual">&#8853; Add</button>
+        <button class="pill" id="btnExport">&#8615; Export</button>
+        <button class="pill" id="btnContribute">&#9993; Contribute</button>
     </div>
 </header>
 
@@ -35,7 +35,7 @@
     <div class="panel-left">
 
         <div>
-            <div class="section-label">Axes du graphique</div>
+            <div class="section-label">Chart axes</div>
             <div class="axis-selector">
                 <div class="axis-row">
                     <span class="axis-label">X</span>
@@ -53,16 +53,16 @@
         </div>
 
         <div>
-            <div class="section-label">Couleur</div>
+            <div class="section-label">Color</div>
             <select class="axis-pick" id="colorSelect"></select>
             <label class="checkbox-row">
-                <input type="checkbox" id="invertY"> Inverser axe Y
+                <input type="checkbox" id="invertY"> Invert Y axis
             </label>
         </div>
 
         <div>
-            <div class="section-label">Filtrer par volcan</div>
-            <input type="text" class="search-input" id="filterSearch" placeholder="Rechercher...">
+            <div class="section-label">Filter by volcano</div>
+            <input type="text" class="search-input" id="filterSearch" placeholder="Search...">
             <div class="volcano-list" id="volcanoList"></div>
         </div>
 
@@ -87,7 +87,7 @@
                 <button class="toolbar-btn" id="tb-labels3d">Aa Labels</button>
             </span>
             <div class="toolbar-info">
-                <span id="selectionCount">0</span> s&eacute;lect. &middot; <span id="totalCount">0</span> pts
+                <span id="selectionCount">0</span> selected &middot; <span id="totalCount">0</span> pts
             </div>
         </div>
         <div id="plotDiv"></div>
@@ -97,12 +97,12 @@
     <div class="panel-right">
 
         <div>
-            <div class="section-label">Point s&eacute;lectionn&eacute;</div>
-            <div id="pointDetail"><div class="empty-state">Cliquez sur un point<br>pour voir ses donn&eacute;es</div></div>
+            <div class="section-label">Selected point</div>
+            <div id="pointDetail"><div class="empty-state">Click on a point<br>to see its data</div></div>
         </div>
 
         <div>
-            <div class="section-label">Statistiques s&eacute;lection</div>
+            <div class="section-label">Selection statistics</div>
             <div class="stats-row">
                 <div class="stat-box"><div class="sval" id="statN">&mdash;</div><div class="slabel">Points</div></div>
                 <div class="stat-box"><div class="sval" id="statT">&mdash;</div><div class="slabel">Col 1</div></div>
@@ -111,16 +111,16 @@
         </div>
 
         <div>
-            <div class="section-label">S&eacute;lection (<span id="selListCount">0</span>)</div>
+            <div class="section-label">Selection (<span id="selListCount">0</span>)</div>
             <div class="selection-list" id="selectionList">
-                <div class="empty-state">Utilisez le lasso ou<br>le rectangle (vue 2D)</div>
+                <div class="empty-state">Use lasso or<br>rectangle (2D view)</div>
             </div>
         </div>
 
         <div>
             <div class="section-label">Actions</div>
             <div class="control-group">
-                <button class="btn" id="btnClearSelection">&#10005; Effacer s&eacute;lection</button>
+                <button class="btn" id="btnClearSelection">&#10005; Clear selection</button>
             </div>
         </div>
 
@@ -130,20 +130,20 @@
 <!-- MODAL: Upload CSV -->
 <div class="modal-overlay" id="modalUpload">
     <div class="modal">
-        <h2>&#8679; Importer un fichier CSV</h2>
+        <h2>&#8679; Import a CSV file</h2>
         <div class="upload-zone" id="dropZone">
             <span class="up-icon">&#11014;</span>
-            Glisser un CSV ici<br>ou cliquer pour parcourir
+            Drop a CSV here<br>or click to browse
         </div>
         <input type="file" id="fileInput" accept=".csv" style="display:none">
         <div id="uploadPreview" class="hidden">
-            <h3>Aper&ccedil;u</h3>
+            <h3>Preview</h3>
             <div id="previewTableContainer"></div>
             <div id="uploadErrors"></div>
-            <button class="btn-primary" id="btnConfirmUpload">Confirmer l'import</button>
+            <button class="btn-primary" id="btnConfirmUpload">Confirm import</button>
         </div>
         <div class="modal-footer">
-            <button class="btn-cancel modal-close">Annuler</button>
+            <button class="btn-cancel modal-close">Cancel</button>
         </div>
     </div>
 </div>
@@ -151,12 +151,12 @@
 <!-- MODAL: Manual entry -->
 <div class="modal-overlay" id="modalAdd">
     <div class="modal">
-        <h2>&#8853; Ajouter des donn&eacute;es</h2>
+        <h2>&#8853; Add data</h2>
         <form id="formAddData">
             <div id="formFields"></div>
             <div class="modal-footer">
-                <button class="btn-cancel modal-close" type="button">Annuler</button>
-                <button class="btn-primary" type="submit">Ajouter</button>
+                <button class="btn-cancel modal-close" type="button">Cancel</button>
+                <button class="btn-primary" type="submit">Add</button>
             </div>
         </form>
     </div>
@@ -165,19 +165,19 @@
 <!-- MODAL: Export -->
 <div class="modal-overlay" id="modalExport">
     <div class="modal">
-        <h2>&#8615; Exporter vos donn&eacute;es</h2>
+        <h2>&#8615; Export your data</h2>
         <div id="exportPreview"></div>
-        <button class="btn-primary" id="btnDownloadCSV">T&eacute;l&eacute;charger le CSV</button>
+        <button class="btn-primary" id="btnDownloadCSV">Download CSV</button>
         <div class="export-instructions">
-            <h3>Comment soumettre vos donn&eacute;es</h3>
+            <h3>How to submit your data</h3>
             <ol>
-                <li>T&eacute;l&eacute;chargez le fichier CSV ci-dessus</li>
-                <li>Envoyez-le par email (adresse dans la section Contribuer)</li>
-                <li>Pr&eacute;cisez votre nom et la source des donn&eacute;es</li>
+                <li>Download the CSV file above</li>
+                <li>Send it by email (address in the Contribute section)</li>
+                <li>Include your name and the data source</li>
             </ol>
         </div>
         <div class="modal-footer">
-            <button class="btn-cancel modal-close">Fermer</button>
+            <button class="btn-cancel modal-close">Close</button>
         </div>
     </div>
 </div>
@@ -185,14 +185,14 @@
 <!-- MODAL: Contribute -->
 <div class="modal-overlay" id="modalContribute">
     <div class="modal">
-        <h2>&#8853; Contribuer au projet</h2>
-        <p>Vos donn&eacute;es seront t&eacute;l&eacute;charg&eacute;es en CSV pour envoi aux responsables du projet.</p>
-        <input type="text" placeholder="Votre nom / institution" id="contribName">
-        <input type="email" placeholder="Email de contact" id="contribEmail">
-        <div style="font-size:0.63rem;color:var(--muted);margin:8px 0">&#9873; <span id="userDataSummary">Aucune donn&eacute;e utilisateur charg&eacute;e</span></div>
+        <h2>&#8853; Contribute to the project</h2>
+        <p>Your data will be downloaded as CSV for submission to the project maintainers.</p>
+        <input type="text" placeholder="Your name / institution" id="contribName">
+        <input type="email" placeholder="Contact email" id="contribEmail">
+        <div style="font-size:0.63rem;color:var(--muted);margin:8px 0">&#9873; <span id="userDataSummary">No user data loaded</span></div>
         <div class="modal-footer">
-            <button class="btn-cancel modal-close">Annuler</button>
-            <button class="btn-primary" id="btnSubmit">T&eacute;l&eacute;charger &amp; Envoyer</button>
+            <button class="btn-cancel modal-close">Cancel</button>
+            <button class="btn-primary" id="btnSubmit">Download &amp; Send</button>
         </div>
     </div>
 </div>

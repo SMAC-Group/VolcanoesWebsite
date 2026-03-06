@@ -33,7 +33,7 @@ export function render(rows, xCol, yCol, zCol, colorCol, { showLabels = false } 
             z: basePts.map(p => p[zCol]),
             customdata: basePts.map(p => p._idx),
             text: showLabels ? basePts.map(p => p[colorCol] ?? '') : undefined,
-            name: 'Données',
+            name: 'Data',
             mode: showLabels ? 'markers+text' : 'markers',
             type: 'scatter3d',
             textfont: { size: 7, color: basePts.map(p => colorMap[p[colorCol] ?? 'N/A']) },
@@ -52,11 +52,11 @@ export function render(rows, xCol, yCol, zCol, colorCol, { showLabels = false } 
             y: userPts.map(p => p[yCol]),
             z: userPts.map(p => p[zCol]),
             customdata: userPts.map(p => p._idx),
-            name: 'Vos données',
+            name: 'Your data',
             mode: 'markers',
             type: 'scatter3d',
             marker: { size: 6, color: t.userColor },
-            hovertemplate: `Vos données<br>${Columns.label(xCol)}=%{x}<br>${Columns.label(yCol)}=%{y}<br>${Columns.label(zCol)}=%{z}<extra></extra>`,
+            hovertemplate: `Your data<br>${Columns.label(xCol)}=%{x}<br>${Columns.label(yCol)}=%{y}<br>${Columns.label(zCol)}=%{z}<extra></extra>`,
         });
     }
 
@@ -76,7 +76,7 @@ export function render(rows, xCol, yCol, zCol, colorCol, { showLabels = false } 
     if (centroids.x.length) {
         traces.push({
             x: centroids.x, y: centroids.y, z: centroids.z,
-            mode: 'markers+text', type: 'scatter3d', name: 'Centroides', showlegend: false,
+            mode: 'markers+text', type: 'scatter3d', name: 'Centroids', showlegend: false,
             text: centroids.text,
             textfont: { size: 9, color: centroids.colors },
             textposition: 'top center',

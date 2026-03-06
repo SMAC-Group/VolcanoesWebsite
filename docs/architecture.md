@@ -1,49 +1,49 @@
 # Architecture
 
-[Retour au README](../README.md)
+[Back to README](../README.md)
 
-## Vue d'ensemble
+## Overview
 
-VolcanInfos est une **SPA (Single Page Application) statique** construite en vanilla JS avec ES Modules. Il n'y a aucun build step : le navigateur resout les imports nativement.
+VolcanInfos is a **static SPA (Single Page Application)** built with vanilla JS and ES Modules. There is no build step — the browser resolves imports natively.
 
-Le point d'entree unique est :
+The single entry point is:
 ```html
 <script type="module" src="js/app.js">
 ```
 
-## Patterns principaux
+## Core Patterns
 
-### 1. Bus d'evenements (Pub/Sub)
+### 1. Event Bus (Pub/Sub)
 
-Les modules communiquent via un bus d'evenements (`js/events.js`) au lieu de s'appeler directement. Cela permet de :
-- Decoupler les modules entre eux
-- Faciliter le remplacement d'un module (ex: passer a React/Vue)
-- Ajouter de nouveaux listeners sans modifier le code existant
+Modules communicate via an event bus (`js/events.js`) instead of calling each other directly. This allows:
+- Decoupling modules from one another
+- Easy replacement of a module (e.g., switching to React/Vue)
+- Adding new listeners without modifying existing code
 
-**Evenements disponibles** (`EVT`) :
+**Available events** (`EVT`):
 
-| Constante | Declencheur | Payload |
-|-----------|-------------|---------|
-| `DATA_LOADED` | Donnees CSV chargees au boot | aucun |
-| `DATA_UPDATED` | Apres upload CSV ou saisie manuelle | aucun |
-| `SELECTION_CHANGED` | Click/lasso/rectangle sur le graphique | `Set<index>` |
-| `VIEW_CHANGED` | Bascule 2D/3D | `'2d'` ou `'3d'` |
-| `FILTER_CHANGED` | Checkbox volcan cochee/decochee | aucun |
-| `AXES_CHANGED` | Changement d'axe X/Y/Z/couleur | aucun |
+| Constant | Trigger | Payload |
+|----------|---------|---------|
+| `DATA_LOADED` | CSV data loaded at boot | none |
+| `DATA_UPDATED` | After CSV upload or manual entry | none |
+| `SELECTION_CHANGED` | Click/lasso/rectangle on chart | `Set<index>` |
+| `VIEW_CHANGED` | 2D/3D toggle | `'2d'` or `'3d'` |
+| `FILTER_CHANGED` | Volcano checkbox toggled | none |
+| `AXES_CHANGED` | X/Y/Z/color axis changed | none |
 
-### 2. Couche de services (abstraction backend)
+### 2. Service Layer (backend abstraction)
 
-Tout acces aux donnees passe par `js/services/api.js`, qui delegue au backend actif. En mode statique, c'est `static-backend.js` (fetch CSV + localStorage). Voir [services.md](services.md) pour les details de migration.
+All data access goes through `js/services/api.js`, which delegates to the active backend. In static mode, this is `static-backend.js` (CSV fetch + localStorage). See [services.md](services.md) for migration details.
 
-### 3. Dimensions dynamiques
+### 3. Dynamic Dimensions
 
-Les colonnes ne sont **pas hardcodees**. Elles sont detectees depuis les en-tetes CSV et configurees dans `js/columns.js`. Ajouter une dimension = ajouter une colonne au CSV + une entree dans `columns.js`.
+Columns are **not hardcoded**. They are detected from CSV headers and configured in `js/columns.js`. Adding a dimension = adding a column to the CSV + an entry in `columns.js`.
 
-### 4. Gestion des valeurs manquantes
+### 4. Missing Data Handling
 
-Les cellules vides/null sont valides partout. Les points avec des valeurs null pour les axes courants sont filtres du graphique (pas supprimes du dataset).
+Null/empty cells are valid throughout. Points with null values for the current axes are filtered from the chart (not removed from the dataset).
 
-## Flux de donnees
+## Data Flow
 
 ```
 volcanoData.csv
@@ -52,28 +52,28 @@ volcanoData.csv
 static-backend.js  (fetch + parse)
       |
       v
-   api.js  (facade unifiee)
+   api.js  (unified facade)
       |
-      +---> sidebar.js     (selecteurs d'axes, filtre)
-      +---> chart2d.js     (rendu 2D)
-      +---> chart3d.js     (rendu 3D)
-      +---> detail-panel.js (panneau droit)
+      +---> sidebar.js     (axis selectors, filter)
+      +---> chart2d.js     (2D rendering)
+      +---> chart3d.js     (3D rendering)
+      +---> detail-panel.js (right panel)
       +---> modals.js      (import/export)
 
 localStorage
       |
       v
-static-backend.js  (lecture/ecriture donnees utilisateur)
+static-backend.js  (read/write user data)
       |
       v
    api.js  (merge base + user via getAllRows())
 ```
 
-## Cycle de rendu
+## Render Cycle
 
-1. `app.js` appelle `renderChart()`
-2. Les lignes sont filtrees selon les filtres volcan actifs (`_getFilteredRows()`)
-3. Le module de graphique actif (2D ou 3D) recoit les lignes et les noms de colonnes
-4. Plotly genere le graphique dans `#plotDiv`
-5. Les evenements Plotly (`plotly_click`, `plotly_selected`) alimentent `selection.js`
-6. `selection.js` emet `SELECTION_CHANGED` → `detail-panel.js` met a jour le panneau droit
+1. `app.js` calls `renderChart()`
+2. Rows are filtered according to active volcano filters (`_getFilteredRows()`)
+3. The active chart module (2D or 3D) receives rows and column names
+4. Plotly generates the chart in `#plotDiv`
+5. Plotly events (`plotly_click`, `plotly_selected`) feed into `selection.js`
+6. `selection.js` emits `SELECTION_CHANGED` → `detail-panel.js` updates the right panel

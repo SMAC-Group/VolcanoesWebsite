@@ -35,12 +35,12 @@ export function stringify(headers, rows) {
 export function validate(headers, rows) {
     const issues = [];
     if (headers.length === 0) {
-        issues.push({ type: 'error', message: 'Aucun en-tête détecté' });
+        issues.push({ type: 'error', message: 'No headers detected' });
     }
     rows.forEach((row, i) => {
         const nullCount = headers.filter(h => row[h] === null || row[h] === '').length;
         if (nullCount === headers.length) {
-            issues.push({ type: 'warning', message: `Ligne ${i + 1} est entièrement vide` });
+            issues.push({ type: 'warning', message: `Row ${i + 1} is entirely empty` });
         }
     });
     return issues;

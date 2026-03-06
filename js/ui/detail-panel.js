@@ -24,7 +24,7 @@ export function updateSelectionInfo(selectedSet, allRows) {
         statN.textContent = '—';
         statT.textContent = '—';
         statP.textContent = '—';
-        selList.innerHTML = '<div class="empty-state">Utilisez le lasso ou<br>le rectangle (vue 2D)</div>';
+        selList.innerHTML = '<div class="empty-state">Use lasso or<br>rectangle (2D view)</div>';
         return;
     }
 
@@ -50,7 +50,7 @@ export function updateSelectionInfo(selectedSet, allRows) {
         const name = nameCol ? (d[nameCol] ?? '?') : `#${d._idx ?? ''}`;
         const val = col1 && d[col1] !== null ? `${d[col1]}` : '';
         return `<div class="sel-item"><span>${name}</span><span style="color:${CONFIG.theme.accent2}">${val}</span></div>`;
-    }).join('') + (sel.length > 20 ? `<div class="sel-item" style="justify-content:center">... et ${sel.length - 20} autres</div>` : '');
+    }).join('') + (sel.length > 20 ? `<div class="sel-item" style="justify-content:center">... and ${sel.length - 20} more</div>` : '');
 }
 
 // Show detail card for a single clicked point
@@ -68,7 +68,7 @@ export function showPointDetail(row) {
 
     let html = `<div class="volcano-card">`;
     html += `<div class="name">${title}`;
-    if (isUser) html += ` <span class="user-tag">VOUS</span>`;
+    if (isUser) html += ` <span class="user-tag">YOU</span>`;
     html += `</div>`;
 
     // Show remaining meta fields

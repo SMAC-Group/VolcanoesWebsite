@@ -35,7 +35,7 @@ export function openManualEntry() {
 export function openExport() {
     const userRows = API.getUserData();
     if (userRows.length === 0) {
-        alert('Aucune donnée utilisateur à exporter.');
+        alert('No user data to export.');
         return;
     }
     const headers = API.getAllHeaders().filter(h => !h.startsWith('_'));
@@ -49,8 +49,8 @@ export function openContribute() {
     const summary = document.getElementById('userDataSummary');
     if (summary) {
         summary.textContent = count > 0
-            ? `${count} points utilisateur en cache`
-            : 'Aucune donnée utilisateur chargée';
+            ? `${count} user points in cache`
+            : 'No user data loaded';
     }
     document.getElementById('modalContribute')?.classList.add('open');
 }
@@ -88,7 +88,7 @@ function _initUpload() {
 
 function _handleFile(file) {
     if (!file.name.endsWith('.csv')) {
-        alert('Veuillez sélectionner un fichier .csv');
+        alert('Please select a .csv file');
         return;
     }
     const reader = new FileReader();
@@ -121,12 +121,12 @@ function _showUploadPreview(headers, rows) {
         html += '<tr>';
         headers.forEach(h => {
             const val = rows[i][h];
-            html += `<td>${val ?? '<em>vide</em>'}</td>`;
+            html += `<td>${val ?? '<em>empty</em>'}</td>`;
         });
         html += '</tr>';
     }
     if (rows.length > 10) {
-        html += `<tr><td colspan="${headers.length}">... et ${rows.length - 10} autres lignes</td></tr>`;
+        html += `<tr><td colspan="${headers.length}">... and ${rows.length - 10} more rows</td></tr>`;
     }
     html += '</tbody></table>';
     container.innerHTML = html;
@@ -159,7 +159,7 @@ function _buildFormFields() {
     headers.forEach(h => {
         const div = document.createElement('div');
         div.className = 'form-row';
-        div.innerHTML = `<label>${h}</label><input type="text" name="${h}" placeholder="Vide si inconnu">`;
+        div.innerHTML = `<label>${h}</label><input type="text" name="${h}" placeholder="Leave empty if unknown">`;
         container.appendChild(div);
     });
 }
@@ -170,18 +170,18 @@ function _initExport() {
     document.getElementById('btnDownloadCSV')?.addEventListener('click', () => {
         const headers = API.getAllHeaders().filter(h => !h.startsWith('_'));
         const csv = API.exportUserCSV(headers);
-        _downloadFile('mes_donnees_volcaniques.csv', csv);
+        _downloadFile('my_volcanic_data.csv', csv);
     });
 
     document.getElementById('btnSubmit')?.addEventListener('click', () => {
         const name = document.getElementById('contribName')?.value || '';
         const email = document.getElementById('contribEmail')?.value || '';
-        if (!email) { alert('Email requis.'); return; }
+        if (!email) { alert('Email required.'); return; }
 
         const headers = API.getAllHeaders().filter(h => !h.startsWith('_'));
         const result = API.submitContribution(headers, { name, email });
         _downloadFile('contribution_volcaninfos.csv', result.csv);
-        alert(`CSV téléchargé (${result.rowCount} lignes). Envoyez-le à ${CONFIG.contactEmail}`);
+        alert(`CSV downloaded (${result.rowCount} rows). Send it to ${CONFIG.contactEmail}`);
         document.getElementById('modalContribute')?.classList.remove('open');
     });
 }

@@ -36,7 +36,7 @@ export function render(rows, xCol, yCol, colorCol, { invertY = false, showEllips
             y: basePts.map(p => p[yCol]),
             customdata: basePts.map(p => p._idx),
             text: basePts.map(p => _tooltip(p)),
-            name: 'Données',
+            name: 'Data',
             mode: 'markers',
             type: 'scattergl',
             marker: {
@@ -56,7 +56,7 @@ export function render(rows, xCol, yCol, colorCol, { invertY = false, showEllips
             y: userPts.map(p => p[yCol]),
             customdata: userPts.map(p => p._idx),
             text: userPts.map(p => _tooltip(p)),
-            name: 'Vos données',
+            name: 'Your data',
             mode: 'markers',
             type: 'scattergl',
             marker: {

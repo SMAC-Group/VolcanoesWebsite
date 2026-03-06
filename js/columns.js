@@ -13,11 +13,11 @@
 
 export const COLUMNS = {
     // --- Metadata ---
-    Reference:      { label: 'Référence',          role: 'meta' },
+    Reference:      { label: 'Reference',            role: 'meta' },
 
     // --- Main axes ---
-    T_C:            { label: 'Température (°C)',    role: 'axis' },
-    P_kbar:         { label: 'Pression (kbar)',     role: 'axis' },
+    T_C:            { label: 'Temperature (°C)',    role: 'axis' },
+    P_kbar:         { label: 'Pressure (kbar)',     role: 'axis' },
 
     // --- Cpx compositions ---
     n_cpx:          { label: 'n Cpx',               role: 'axis' },

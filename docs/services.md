@@ -1,62 +1,62 @@
-# Couche de services
+# Service Layer
 
-[Retour au README](../README.md) | [Fichiers](fichiers.md)
+[Back to README](../README.md) | [Files](files.md)
 
-## Principe
+## Principle
 
-Tout acces aux donnees passe par `js/services/api.js`. C'est la **seule dependance data** des autres modules. Le reste de l'app ne sait pas d'ou viennent les donnees.
+All data access goes through `js/services/api.js`. It is the **only data dependency** for all other modules. The rest of the app has no knowledge of where the data comes from.
 
 ---
 
 ## `js/services/api.js`
 
-Facade qui delegue au backend actif selon `CONFIG.backend`.
+Facade that delegates to the active backend based on `CONFIG.backend`.
 
-**Fonctions deleguees au backend** :
-| Fonction | Description |
+**Functions delegated to the backend**:
+| Function | Description |
 |----------|-------------|
-| `fetchVolcanoes(url?)` | Charge les donnees de base (CSV ou API) |
-| `getBaseHeaders()` | En-tetes du CSV de base |
-| `getBaseRows()` | Lignes du CSV de base (taguees `_source: 'base'`) |
-| `getUserData()` | Donnees utilisateur (localStorage ou API) |
-| `saveUserData(rows)` | Sauvegarde les donnees utilisateur |
-| `appendUserData(newRows)` | Ajoute des lignes aux donnees utilisateur |
-| `clearUserData()` | Supprime toutes les donnees utilisateur |
-| `hasUserData()` | Verifie si des donnees utilisateur existent |
-| `userDataSizeKB()` | Taille des donnees utilisateur en Ko |
-| `exportUserCSV(headers)` | Exporte les donnees utilisateur en CSV string |
-| `submitContribution(headers, meta)` | Prepare le CSV de contribution |
+| `fetchVolcanoes(url?)` | Loads base data (CSV or API) |
+| `getBaseHeaders()` | Base CSV headers |
+| `getBaseRows()` | Base CSV rows (tagged `_source: 'base'`) |
+| `getUserData()` | User data (localStorage or API) |
+| `saveUserData(rows)` | Saves user data |
+| `appendUserData(newRows)` | Appends rows to user data |
+| `clearUserData()` | Deletes all user data |
+| `hasUserData()` | Checks if user data exists |
+| `userDataSizeKB()` | User data size in KB |
+| `exportUserCSV(headers)` | Exports user data as CSV string |
+| `submitContribution(headers, meta)` | Prepares contribution CSV |
 
-**Fonctions derivees (backend-agnostiques)** :
-| Fonction | Description |
+**Derived functions (backend-agnostic)**:
+| Function | Description |
 |----------|-------------|
-| `getAllRows()` | Merge base + user, chaque ligne taguee `_source` |
-| `getAllHeaders()` | Union des en-tetes, filtre par `columns.js` |
-| `getNumericHeaders()` | Colonnes numeriques (role `axis` ou `detail`) |
-| `getMetaHeaders()` | Colonnes metadata (role `meta`) |
-| `getTooltipHeaders()` | Colonnes affichees dans les tooltips (role `axis`) |
-| `getCategoricalHeaders()` | Colonnes textuelles (pour couleur/filtre) |
-| `uniqueValues(header)` | Valeurs uniques triees pour une colonne |
+| `getAllRows()` | Merges base + user, each row tagged with `_source` |
+| `getAllHeaders()` | Union of headers, filtered by `columns.js` |
+| `getNumericHeaders()` | Numeric columns (role `axis` or `detail`) |
+| `getMetaHeaders()` | Metadata columns (role `meta`) |
+| `getTooltipHeaders()` | Columns shown in tooltips (role `axis`) |
+| `getCategoricalHeaders()` | Text columns (for color/filter) |
+| `uniqueValues(header)` | Sorted unique values for a column |
 
 ---
 
 ## `js/services/static-backend.js`
 
-Implementation statique : charge le CSV via `fetch()`, stocke les donnees utilisateur dans `localStorage`.
+Static implementation: loads CSV via `fetch()`, stores user data in `localStorage`.
 
-**Fonctionnement** :
-1. `fetchVolcanoes()` fait un `fetch('data/volcanoData.csv')`, parse le CSV, stocke les lignes en memoire
-2. Les donnees utilisateur sont serialisees en JSON dans `localStorage` sous la cle `volcaninfos_user_data`
-3. `submitContribution()` genere un CSV et le retourne (pas d'envoi serveur — le fichier est telecharge cote client)
+**How it works**:
+1. `fetchVolcanoes()` calls `fetch('data/volcanoData.csv')`, parses the CSV, stores rows in memory
+2. User data is serialized as JSON in `localStorage` under the key `volcaninfos_user_data`
+3. `submitContribution()` generates a CSV and returns it (no server call — the file is downloaded client-side)
 
 ---
 
-## Migration vers un backend dynamique
+## Migrating to a Dynamic Backend
 
-Pour passer a un backend avec serveur :
+To switch to a server-backed backend:
 
-1. Creer `js/services/remote-backend.js` qui exporte les memes fonctions que `static-backend.js`
-2. Mettre `CONFIG.backend = 'remote'` et `CONFIG.apiUrl = 'https://...'` dans `config.js`
-3. Modifier l'import dans `api.js` pour charger `remote-backend.js` quand `backend === 'remote'`
+1. Create `js/services/remote-backend.js` that exports the same functions as `static-backend.js`
+2. Set `CONFIG.backend = 'remote'` and `CONFIG.apiUrl = 'https://...'` in `config.js`
+3. Update the import in `api.js` to load `remote-backend.js` when `backend === 'remote'`
 
-Aucun autre fichier n'a besoin de changer. Les modules UI continuent d'appeler `api.js` comme avant.
+No other files need to change. UI modules continue to call `api.js` as before.

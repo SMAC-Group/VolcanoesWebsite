@@ -1,97 +1,97 @@
-# Composants UI
+# UI Components
 
-[Retour au README](../README.md) | [Fichiers](fichiers.md)
+[Back to README](../README.md) | [Files](files.md)
 
 ---
 
 ## `js/ui/sidebar.js`
 
-Panneau gauche : selecteurs d'axes et filtre par volcan.
+Left panel: axis selectors and volcano filter.
 
-**Fonctions exportees** :
+**Exported functions**:
 
-- `initAxisSelectors()` — remplit les `<select>` X, Y, Z et Couleur avec les colonnes numeriques/categoriques disponibles. Utilise les valeurs par defaut de `CONFIG.defaultAxes`.
-- `initVolcanoFilter()` — genere la liste de checkboxes a partir des valeurs uniques de la premiere colonne categorique. Chaque changement emet `EVT.FILTER_CHANGED`.
-- `getActiveFilters()` — retourne les noms des volcans coches, ou `null` si tous sont coches (= pas de filtre).
-- `getAxes()` — retourne `{ x, y, z, color, invertY }` depuis les valeurs actuelles des selecteurs.
+- `initAxisSelectors()` — populates the X, Y, Z, and Color `<select>` elements with available numeric/categorical columns. Uses default values from `CONFIG.defaultAxes`.
+- `initVolcanoFilter()` — generates the checkbox list from unique values of the first categorical column. Each change emits `EVT.FILTER_CHANGED`.
+- `getActiveFilters()` — returns the names of checked volcanoes, or `null` if all are checked (= no filter).
+- `getAxes()` — returns `{ x, y, z, color, invertY }` from the current selector values.
 
 ---
 
 ## `js/ui/chart2d.js`
 
-Graphique 2D avec Plotly (`scattergl` pour les performances).
+2D chart using Plotly (`scattergl` for performance).
 
 **`render(rows, xCol, yCol, colorCol, options)`**
 
-1. Filtre les lignes avec des valeurs valides pour X et Y
-2. Construit une color map par groupe (colonne couleur)
-3. Cree 2 traces : donnees de base (triangles) et donnees utilisateur (cercles verts)
-4. Si `showEllipses` : calcule des ellipses de confiance (~1.9 sigma) par groupe (min 5 points) avec remplissage semi-transparent
-5. Si `showLabels` : ajoute le nom du groupe sous chaque ellipse
-6. Cable `plotly_click` → `Selection.toggle()` et `plotly_selected` → `Selection.selectMultiple()`
+1. Filters rows with valid values for X and Y
+2. Builds a color map by group (color column)
+3. Creates 2 traces: base data (triangles) and user data (green circles)
+4. If `showEllipses`: computes confidence ellipses (~1.9 sigma) per group (min 5 points) with semi-transparent fill
+5. If `showLabels`: adds the group name below each ellipse
+6. Wires `plotly_click` → `Selection.toggle()` and `plotly_selected` → `Selection.selectMultiple()`
 
-**Layout** : theme sombre, dragmode lasso par defaut, scrollZoom active, pas de modebar visible.
+**Layout**: dark theme, lasso dragmode by default, scrollZoom enabled, no visible modebar.
 
-**Fonctions internes** :
-- `_groupBy(rows, col)` — regroupe les lignes par valeur de colonne
-- `_tooltip(row)` — genere le HTML du tooltip (meta + axes principaux)
-- `_hexToRgba(hex, a)` — convertit une couleur hex en rgba
+**Internal functions**:
+- `_groupBy(rows, col)` — groups rows by column value
+- `_tooltip(row)` — generates tooltip HTML (meta + main axes)
+- `_hexToRgba(hex, a)` — converts hex color to rgba
 
 ---
 
 ## `js/ui/chart3d.js`
 
-Graphique 3D avec Plotly (`scatter3d`).
+3D chart using Plotly (`scatter3d`).
 
 **`render(rows, xCol, yCol, zCol, colorCol, options)`**
 
-1. Filtre les lignes valides pour X, Y et Z
-2. Cree les traces base + user (meme logique que 2D)
-3. Calcule les **centroides** par groupe : position moyenne X/Y/Z, affiches comme cercles ouverts avec labels
-4. Cable `plotly_click` → `Selection.toggle()`
+1. Filters valid rows for X, Y, and Z
+2. Creates base + user traces (same logic as 2D)
+3. Computes **centroids** per group: average X/Y/Z position, displayed as open circles with labels
+4. Wires `plotly_click` → `Selection.toggle()`
 
-Pas de lasso/rectangle en 3D (limitation Plotly). L'interaction se fait par orbite (drag), pan (Shift+drag) et zoom (scroll).
+No lasso/rectangle in 3D (Plotly limitation). Interaction is via orbit (drag), pan (Shift+drag), and zoom (scroll).
 
 ---
 
 ## `js/ui/detail-panel.js`
 
-Panneau droit : affichage des details et statistiques de selection.
+Right panel: selection details and statistics.
 
 **`updateSelectionInfo(selectedSet, allRows)`**
-- Met a jour les compteurs (nombre de points selectionnes)
-- Calcule les moyennes de Temperature et Pression pour la selection
-- Affiche la liste des 20 premiers points selectionnes (nom + valeur)
-- Si aucun point selectionne : affiche un message vide
+- Updates counters (number of selected points)
+- Computes Temperature and Pressure averages for the selection
+- Displays the first 20 selected points (name + value)
+- If no points selected: shows an empty state message
 
 **`showPointDetail(row)`**
-- Affiche une carte detail pour un point unique
-- Montre la Reference en titre, le tag "VOUS" si c'est une donnee utilisateur
-- Liste toutes les colonnes configurees avec leur valeur
+- Displays a detail card for a single point
+- Shows the Reference as title, "YOU" tag if it's user data
+- Lists all configured columns with their values
 
 ---
 
 ## `js/ui/modals.js`
 
-Gere les 4 modales de l'application.
+Manages the 4 application modals.
 
-### Upload CSV (`modalUpload`)
-- Zone de drag & drop + click pour parcourir
-- Parse le fichier avec `csv.js`, affiche un apercu (10 premieres lignes)
-- Montre les erreurs/warnings de validation
-- Bouton "Confirmer" → `API.appendUserData()` + emet `EVT.DATA_UPDATED`
+### CSV Upload (`modalUpload`)
+- Drag & drop zone + click to browse
+- Parses the file with `csv.js`, shows a preview (first 10 rows)
+- Displays validation errors/warnings
+- "Confirm" button → `API.appendUserData()` + emits `EVT.DATA_UPDATED`
 
-### Saisie manuelle (`modalAdd`)
-- Genere dynamiquement les champs du formulaire a partir des en-tetes CSV
-- A la soumission : convertit les valeurs (string → number si applicable, vide → null)
-- Ajoute la ligne via `API.appendUserData()`
+### Manual Entry (`modalAdd`)
+- Dynamically generates form fields from CSV headers
+- On submit: converts values (string → number if applicable, empty → null)
+- Adds the row via `API.appendUserData()`
 
 ### Export (`modalExport`)
-- Affiche un apercu du CSV dans un `<pre>`
-- Bouton "Telecharger" : genere un Blob et declenche le telechargement
-- Instructions en 3 etapes pour l'envoi par email
+- Shows a CSV preview in a `<pre>` block
+- "Download" button: generates a Blob and triggers the download
+- 3-step instructions for email submission
 
 ### Contribution (`modalContribute`)
-- Champs nom et email
-- Resume des donnees utilisateur en cache
-- Bouton "Telecharger & Envoyer" : genere le CSV, le telecharge, affiche l'adresse email de contact
+- Name and email fields
+- Summary of user data in cache
+- "Download & Send" button: generates CSV, downloads it, shows contact email
