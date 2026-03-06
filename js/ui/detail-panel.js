@@ -6,18 +6,29 @@ import { CONFIG } from '../config.js';
 
 // Keep track of the last selection so we can navigate back from detail view
 let _lastSelection = [];
+let _currentAxes = {};
 
 // Update selection stats and list in the right panel
-export function updateSelectionInfo(selectedSet, allRows) {
+export function updateSelectionInfo(selectedSet, allRows, axes) {
     const statN = document.getElementById('statN');
     const statT = document.getElementById('statT');
     const statP = document.getElementById('statP');
+    const labelT = document.getElementById('labelStatT');
+    const labelP = document.getElementById('labelStatP');
     const selCount = document.getElementById('selectionCount');
     const selListCount = document.getElementById('selListCount');
     const selList = document.getElementById('selectionList');
     const detail = document.getElementById('pointDetail');
 
     if (!statN) return;
+
+    _currentAxes = axes || {};
+    const col1 = _currentAxes.x;
+    const col2 = _currentAxes.y;
+
+    // Update stat labels
+    if (labelT) labelT.textContent = col1 ? Columns.label(col1) : 'Avg X';
+    if (labelP) labelP.textContent = col2 ? Columns.label(col2) : 'Avg Y';
 
     const sel = [...selectedSet].map(i => ({ ...allRows[i], _idx: i })).filter(Boolean);
     _lastSelection = sel;
@@ -38,16 +49,15 @@ export function updateSelectionInfo(selectedSet, allRows) {
 
     statN.textContent = sel.length;
 
-    const col1 = 'T_C';
-    const col2 = 'P_kbar';
-
     if (col1) {
-        const vals = sel.map(r => r[col1]).filter(v => v !== null);
-        statT.textContent = vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : '—';
+        const vals = sel.map(r => r[col1]).filter(v => v !== null && typeof v === 'number');
+        const avg = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+        statT.textContent = avg !== null ? (Number.isInteger(avg) ? avg : avg.toFixed(2)) : '—';
     }
     if (col2) {
-        const vals = sel.map(r => r[col2]).filter(v => v !== null);
-        statP.textContent = vals.length ? (vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1) : '—';
+        const vals = sel.map(r => r[col2]).filter(v => v !== null && typeof v === 'number');
+        const avg = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+        statP.textContent = avg !== null ? (Number.isInteger(avg) ? avg : avg.toFixed(2)) : '—';
     }
 
     _renderSelectionList(sel);
@@ -70,7 +80,7 @@ function _renderSelectionList(sel) {
     const catCols = API.getCategoricalHeaders();
     const nameCol = catCols[0];
     const refCol = Columns.metaKeys()[0]; // 'Reference'
-    const col1 = 'T_C';
+    const col1 = _currentAxes.x;
 
     selList.innerHTML = sel.slice(0, 50).map(d => {
         const name = nameCol ? (d[nameCol] ?? '?') : `#${d._idx ?? ''}`;

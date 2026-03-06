@@ -36,6 +36,11 @@ async function init() {
         document.getElementById(id)?.addEventListener('change', () => {
             Events.emit(EVT.AXES_CHANGED);
             renderChart();
+            // Refresh stats if a selection is active
+            if (Selection.count() > 0) {
+                const a = Sidebar.getAxes();
+                DetailPanel.updateSelectionInfo(Selection.get(), API.getAllRows(), { x: a.x, y: a.y });
+            }
         });
     });
 
@@ -69,12 +74,17 @@ async function init() {
 
     // Selection (lasso / rectangle)
     Events.on(EVT.SELECTION_CHANGED, (selected) => {
-        DetailPanel.updateSelectionInfo(selected, API.getAllRows());
+        const a = Sidebar.getAxes();
+        DetailPanel.updateSelectionInfo(selected, API.getAllRows(), { x: a.x, y: a.y });
     });
 
-    // Single point click → show detail
-    Events.on(EVT.POINT_CLICKED, (index) => {
-        DetailPanel.showPointDetailByIndex(index);
+    // Single point click → show detail; Ctrl+click → toggle selection
+    Events.on(EVT.POINT_CLICKED, ({ index, ctrlKey }) => {
+        if (ctrlKey) {
+            Selection.toggle(index);
+        } else {
+            DetailPanel.showPointDetailByIndex(index);
+        }
     });
 
     document.getElementById('btnClearSelection')?.addEventListener('click', () => {

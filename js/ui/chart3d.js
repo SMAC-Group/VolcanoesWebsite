@@ -106,7 +106,8 @@ export function render(rows, xCol, yCol, zCol, colorCol, { showLabels = false } 
 
     document.getElementById(CHART_ID).on('plotly_click', (evt) => {
         if (!evt.points.length) return;
-        Events.emit(EVT.POINT_CLICKED, evt.points[0].customdata);
+        const ctrlKey = evt.event?.ctrlKey || evt.event?.metaKey || false;
+        Events.emit(EVT.POINT_CLICKED, { index: evt.points[0].customdata, ctrlKey });
     });
 }
 

@@ -75,9 +75,10 @@ No lasso/rectangle in 3D (Plotly limitation). Interaction is via orbit (drag), p
 
 Right panel: selection details and statistics.
 
-**`updateSelectionInfo(selectedSet, allRows)`**
+**`updateSelectionInfo(selectedSet, allRows, axes)`**
 - Updates counters (number of selected points)
-- Computes Temperature and Pressure averages for the selection
+- Computes averages for the current X and Y axes (dynamic, passed via `axes: { x, y }`)
+- Updates stat labels to show the current axis names via `Columns.label()`
 - Displays up to 50 selected points as clickable items in the selection list
 - Clicking an item calls `showPointDetailByIndex()` to display its detail
 - If no points selected: shows an empty state message
@@ -89,9 +90,11 @@ Right panel: selection details and statistics.
 
 **Interaction flow**:
 1. **Single click** on a chart point → shows detail directly in the "Selected point" section
-2. **Lasso/rectangle selection** → populates the selection list with clickable items + stats
-3. **Click an item** in the selection list → shows its detail with a "Back to selection" button
-4. **Click "Back"** → returns to the empty detail state (selection list stays)
+2. **Ctrl+click** (or Cmd+click on macOS) → toggles the point in the selection set
+3. **Lasso/rectangle selection** → populates the selection list with clickable items + stats
+4. **Click an item** in the selection list → shows its detail with a "Back to selection" button
+5. **Click "Back"** → returns to the empty detail state (selection list stays)
+6. **Change axes** while selection is active → stats and labels update dynamically
 
 ---
 

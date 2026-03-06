@@ -126,7 +126,8 @@ export function render(rows, xCol, yCol, colorCol, { invertY = false, showEllips
     el.removeAllListeners?.('plotly_selected');
     el.on('plotly_click', (evt) => {
         if (!evt.points.length) return;
-        Events.emit(EVT.POINT_CLICKED, evt.points[0].customdata);
+        const ctrlKey = evt.event?.ctrlKey || evt.event?.metaKey || false;
+        Events.emit(EVT.POINT_CLICKED, { index: evt.points[0].customdata, ctrlKey });
     });
     el.on('plotly_selected', (evt) => {
         if (!evt?.points) return;
