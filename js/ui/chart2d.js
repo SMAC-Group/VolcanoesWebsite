@@ -10,7 +10,7 @@ const CHART_ID = 'plotDiv';
 let _bindingsAttached = false;
 let _midPan = null;
 
-export function render(rows, xCol, yCol, colorCol, { invertY = false, showEllipses = true, showLabels = false } = {}) {
+export function render(rows, xCol, yCol, colorCol, { invertY = false, showEllipses = true, showLabels = false, colorMap = null } = {}) {
     const t = CONFIG.theme;
 
     // Filter rows with valid values for both axes
@@ -18,12 +18,14 @@ export function render(rows, xCol, yCol, colorCol, { invertY = false, showEllips
         .map((r, i) => ({ ...r, _idx: i }))
         .filter(r => r[xCol] !== null && r[yCol] !== null);
 
-    // Build color map for groups
-    const groupSet = [...new Set(valid.map(r => r[colorCol] ?? 'N/A'))];
-    const colorMap = {};
-    groupSet.forEach((name, i) => {
-        colorMap[name] = CONFIG.clusterColors[i % CONFIG.clusterColors.length];
-    });
+    // Use provided color map or build a local one
+    if (!colorMap) {
+        const groupSet = [...new Set(valid.map(r => r[colorCol] ?? 'N/A'))];
+        colorMap = {};
+        groupSet.forEach((name, i) => {
+            colorMap[name] = CONFIG.clusterColors[i % CONFIG.clusterColors.length];
+        });
+    }
 
     // Separate base and user points
     const basePts = valid.filter(r => r._source !== 'user');

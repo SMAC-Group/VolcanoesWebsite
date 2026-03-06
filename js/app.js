@@ -15,6 +15,7 @@ import * as Correction from './ui/correction.js';
 let currentView = '2d';
 let showEllipses = true;
 let showLabels = false;
+let _colorMap = null;
 
 async function init() {
     // Load base data
@@ -35,6 +36,7 @@ async function init() {
     // Axis / color / filter changes
     ['axisX', 'axisY', 'axisZ', 'colorSelect', 'invertY'].forEach(id => {
         document.getElementById(id)?.addEventListener('change', () => {
+            if (id === 'colorSelect') _colorMap = null; // rebuild on color column change
             Events.emit(EVT.AXES_CHANGED);
             renderChart();
             // Refresh stats if a selection is active
@@ -50,6 +52,7 @@ async function init() {
     document.getElementById('btn3d')?.addEventListener('click', () => setView('3d'));
 
     // Toolbar buttons
+    document.getElementById('btnRefreshColors')?.addEventListener('click', refreshColors);
     document.getElementById('tb-lasso')?.addEventListener('click', () => setTool('lasso'));
     document.getElementById('tb-select')?.addEventListener('click', () => setTool('select'));
     document.getElementById('tb-pan')?.addEventListener('click', () => setTool('pan'));
@@ -93,6 +96,15 @@ async function init() {
         renderChart();
     });
 
+    document.getElementById('btnSelectAll')?.addEventListener('click', () => {
+        document.querySelectorAll('#volcanoList input[type="checkbox"]').forEach(cb => { cb.checked = true; });
+        Events.emit(EVT.FILTER_CHANGED);
+    });
+    document.getElementById('btnDeselectAll')?.addEventListener('click', () => {
+        document.querySelectorAll('#volcanoList input[type="checkbox"]').forEach(cb => { cb.checked = false; });
+        Events.emit(EVT.FILTER_CHANGED);
+    });
+
     // Selection (lasso / rectangle)
     Events.on(EVT.SELECTION_CHANGED, (selected) => {
         const a = Sidebar.getAxes();
@@ -118,6 +130,7 @@ async function init() {
     Events.on(EVT.DATA_UPDATED, () => {
         Sidebar.initAxisSelectors();
         Sidebar.initVolcanoFilter();
+        _colorMap = null; // rebuild color map with new data
         _updateCacheWarning();
         _updateTotalCount();
         renderChart();
@@ -155,10 +168,28 @@ async function init() {
     Events.emit(EVT.DATA_LOADED);
 }
 
+function _buildColorMap(colorCol, rows) {
+    const groupSet = [...new Set(rows.map(r => r[colorCol] ?? 'N/A'))];
+    const map = {};
+    groupSet.forEach((name, i) => {
+        map[name] = CONFIG.clusterColors[i % CONFIG.clusterColors.length];
+    });
+    return map;
+}
+
+function refreshColors() {
+    const axes = Sidebar.getAxes();
+    _colorMap = _buildColorMap(axes.color, _getFilteredRows());
+    renderChart();
+}
+
 function renderChart() {
     const axes = Sidebar.getAxes();
     let rows = _getFilteredRows();
     _updateTotalCount(rows.length);
+
+    // Build stable color map if not yet initialized or color column changed
+    if (!_colorMap) _colorMap = _buildColorMap(axes.color, API.getAllRows());
 
     // Apply pending corrections to rendered data
     if (Correction.isActive()) {
@@ -167,12 +198,13 @@ function renderChart() {
     }
 
     if (currentView === '3d') {
-        Chart3D.render(rows, axes.x, axes.y, axes.z, axes.color, { showLabels });
+        Chart3D.render(rows, axes.x, axes.y, axes.z, axes.color, { showLabels, colorMap: _colorMap });
     } else {
         Chart2D.render(rows, axes.x, axes.y, axes.color, {
             invertY: axes.invertY,
             showEllipses,
             showLabels,
+            colorMap: _colorMap,
         });
         if (Correction.isActive()) Correction.reattach();
     }

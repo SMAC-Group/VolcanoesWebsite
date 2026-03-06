@@ -8,19 +8,21 @@ import { Events, EVT } from '../events.js';
 
 const CHART_ID = 'plotDiv';
 
-export function render(rows, xCol, yCol, zCol, colorCol, { showLabels = false } = {}) {
+export function render(rows, xCol, yCol, zCol, colorCol, { showLabels = false, colorMap = null } = {}) {
     const t = CONFIG.theme;
 
     const valid = rows
         .map((r, i) => ({ ...r, _idx: i }))
         .filter(r => r[xCol] !== null && r[yCol] !== null && r[zCol] !== null);
 
-    // Build color map
-    const groupSet = [...new Set(valid.map(r => r[colorCol] ?? 'N/A'))];
-    const colorMap = {};
-    groupSet.forEach((name, i) => {
-        colorMap[name] = CONFIG.clusterColors[i % CONFIG.clusterColors.length];
-    });
+    // Use provided color map or build a local one
+    if (!colorMap) {
+        const groupSet = [...new Set(valid.map(r => r[colorCol] ?? 'N/A'))];
+        colorMap = {};
+        groupSet.forEach((name, i) => {
+            colorMap[name] = CONFIG.clusterColors[i % CONFIG.clusterColors.length];
+        });
+    }
 
     const basePts = valid.filter(r => r._source !== 'user');
     const userPts = valid.filter(r => r._source === 'user');

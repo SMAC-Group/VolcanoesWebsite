@@ -56,7 +56,10 @@
 
         <div>
             <div class="section-label">Color</div>
-            <select class="axis-pick" id="colorSelect"></select>
+            <div class="color-row">
+                <select class="axis-pick" id="colorSelect"></select>
+                <button class="btn-icon" id="btnRefreshColors" title="Refresh colors">&#8635;</button>
+            </div>
             <label class="checkbox-row">
                 <input type="checkbox" id="invertY"> Invert Y axis
             </label>
@@ -65,6 +68,10 @@
         <div>
             <div class="section-label">Filter by volcano</div>
             <input type="text" class="search-input" id="filterSearch" placeholder="Search...">
+            <div class="filter-actions">
+                <button class="btn-sm" id="btnSelectAll">Select all</button>
+                <button class="btn-sm" id="btnDeselectAll">Deselect all</button>
+            </div>
             <div class="volcano-list" id="volcanoList"></div>
         </div>
 
