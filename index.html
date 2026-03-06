@@ -24,6 +24,7 @@
         </div>
         <button class="pill" id="btnUpload">&#8679; Import CSV</button>
         <button class="pill" id="btnAddManual">&#8853; Add</button>
+        <button class="pill" id="btnManage">&#9998; Manage</button>
         <button class="pill" id="btnExport">&#8615; Export</button>
         <button class="pill" id="btnContribute">&#9993; Contribute</button>
     </div>
@@ -193,6 +194,19 @@
         <div class="modal-footer">
             <button class="btn-cancel modal-close">Cancel</button>
             <button class="btn-primary" id="btnSubmit">Download &amp; Send</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: Manage user data -->
+<div class="modal-overlay" id="modalManage">
+    <div class="modal modal-wide">
+        <h2>&#9998; Manage your data</h2>
+        <p id="manageInfo">You have no user-added points.</p>
+        <div id="manageTableContainer" class="manage-table-wrap"></div>
+        <div class="modal-footer">
+            <button class="btn-danger" id="btnClearAllUserData">Delete all</button>
+            <button class="btn-cancel modal-close">Close</button>
         </div>
     </div>
 </div>

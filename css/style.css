@@ -199,6 +199,28 @@ select.axis-pick:focus { border-color: var(--accent); }
     cursor: pointer; border-radius: 4px;
 }
 
+.modal-wide { width: 620px; }
+.manage-table-wrap { max-height: 400px; overflow-y: auto; margin-bottom: 8px; }
+.manage-table { width: 100%; border-collapse: collapse; font-size: 0.65rem; }
+.manage-table th, .manage-table td {
+    padding: 5px 8px; border-bottom: 1px solid var(--border);
+    text-align: left; white-space: nowrap; max-width: 140px; overflow: hidden; text-overflow: ellipsis;
+}
+.manage-table th { color: var(--accent2); font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.05em; position: sticky; top: 0; background: var(--bg2); }
+.manage-table tr:hover { background: var(--bg3); }
+.btn-del {
+    background: transparent; border: 1px solid #e94560; color: #e94560;
+    padding: 2px 8px; font-size: 0.6rem; cursor: pointer; border-radius: 3px;
+    font-family: var(--font-mono);
+}
+.btn-del:hover { background: #e94560; color: white; }
+.btn-danger {
+    background: #e94560; color: white; border: none;
+    padding: 8px 14px; font-family: var(--font-mono); font-size: 0.7rem;
+    cursor: pointer; border-radius: 4px;
+}
+.btn-danger:hover { opacity: 0.85; }
+
 .form-row { margin-bottom: 8px; }
 .form-row label { display: block; font-size: 0.62rem; color: var(--muted); margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.1em; }
 

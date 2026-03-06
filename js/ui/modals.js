@@ -21,6 +21,7 @@ export function init() {
     _initUpload();
     _initManualEntry();
     _initExport();
+    _initManage();
 }
 
 export function openUpload() {
@@ -30,6 +31,11 @@ export function openUpload() {
 export function openManualEntry() {
     _buildFormFields();
     document.getElementById('modalAdd')?.classList.add('open');
+}
+
+export function openManage() {
+    _buildManageTable();
+    document.getElementById('modalManage')?.classList.add('open');
 }
 
 export function openExport() {
@@ -190,6 +196,67 @@ function _showExportPreview(csvString) {
     const el = document.getElementById('exportPreview');
     if (!el) return;
     el.innerHTML = `<pre style="max-height:200px;overflow:auto;font-size:0.75rem;background:#0a0c10;padding:8px;border-radius:4px">${_escapeHtml(csvString)}</pre>`;
+}
+
+// --- Manage user data ---
+
+function _initManage() {
+    document.getElementById('btnClearAllUserData')?.addEventListener('click', () => {
+        if (!confirm('Delete all user-added points?')) return;
+        API.clearUserData();
+        _buildManageTable();
+        Events.emit(EVT.DATA_UPDATED);
+    });
+}
+
+function _buildManageTable() {
+    const container = document.getElementById('manageTableContainer');
+    const info = document.getElementById('manageInfo');
+    const rows = API.getUserData();
+
+    if (!container) return;
+
+    if (rows.length === 0) {
+        if (info) info.textContent = 'You have no user-added points.';
+        container.innerHTML = '';
+        return;
+    }
+
+    if (info) info.textContent = `${rows.length} user-added point${rows.length > 1 ? 's' : ''}.`;
+
+    const headers = API.getAllHeaders().filter(h => !h.startsWith('_'));
+    const displayHeaders = headers.slice(0, 6); // show first 6 columns to keep table readable
+
+    let html = '<table class="manage-table"><thead><tr>';
+    html += '<th>#</th>';
+    displayHeaders.forEach(h => html += `<th>${h}</th>`);
+    if (headers.length > 6) html += `<th>...</th>`;
+    html += '<th></th></tr></thead><tbody>';
+
+    rows.forEach((row, i) => {
+        html += '<tr>';
+        html += `<td>${i + 1}</td>`;
+        displayHeaders.forEach(h => {
+            const val = row[h];
+            html += `<td title="${val ?? ''}">${val ?? ''}</td>`;
+        });
+        if (headers.length > 6) html += '<td></td>';
+        html += `<td><button class="btn-del" data-index="${i}">Delete</button></td>`;
+        html += '</tr>';
+    });
+
+    html += '</tbody></table>';
+    container.innerHTML = html;
+
+    // Wire delete buttons
+    container.querySelectorAll('.btn-del').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const idx = parseInt(btn.dataset.index, 10);
+            API.deleteUserDataRow(idx);
+            _buildManageTable();
+            Events.emit(EVT.DATA_UPDATED);
+        });
+    });
 }
 
 // --- Helpers ---

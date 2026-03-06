@@ -54,6 +54,14 @@ export function appendUserData(newRows) {
     saveUserData([...existing, ...newRows]);
 }
 
+export function deleteUserDataRow(index) {
+    const rows = getUserData();
+    if (index >= 0 && index < rows.length) {
+        rows.splice(index, 1);
+        saveUserData(rows);
+    }
+}
+
 export function clearUserData() {
     localStorage.removeItem(STORAGE_KEY);
 }

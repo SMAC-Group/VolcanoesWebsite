@@ -36,6 +36,10 @@ export function appendUserData(newRows) {
     return _backend().appendUserData(newRows);
 }
 
+export function deleteUserDataRow(index) {
+    return _backend().deleteUserDataRow(index);
+}
+
 export function clearUserData() {
     return _backend().clearUserData();
 }

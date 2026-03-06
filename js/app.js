@@ -55,6 +55,7 @@ async function init() {
     // Header actions
     document.getElementById('btnContribute')?.addEventListener('click', () => Modals.openContribute());
     document.getElementById('btnUpload')?.addEventListener('click', () => Modals.openUpload());
+    document.getElementById('btnManage')?.addEventListener('click', () => Modals.openManage());
     document.getElementById('btnExport')?.addEventListener('click', () => Modals.openExport());
     document.getElementById('btnAddManual')?.addEventListener('click', () => Modals.openManualEntry());
 
