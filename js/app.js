@@ -107,6 +107,8 @@ async function init() {
         if (e.button === 1) e.preventDefault();
     });
 
+    _initResize();
+
     Events.emit(EVT.DATA_LOADED);
 }
 
@@ -187,6 +189,107 @@ function _updateCacheWarning() {
 function _updateTotalCount(count) {
     const el = document.getElementById('totalCount');
     if (el) el.textContent = count ?? API.getAllRows().length;
+}
+
+// --- Resizable panels ---
+
+const LAYOUT_STORAGE_KEY = 'volcaninfos_layout';
+const DEFAULT_LEFT = 255;
+const DEFAULT_RIGHT = 275;
+
+function _initResize() {
+    const layout = document.querySelector('.layout');
+    const handleLeft = document.getElementById('resizeLeft');
+    const handleRight = document.getElementById('resizeRight');
+    if (!layout || !handleLeft || !handleRight) return;
+
+    const MIN_LEFT = 180;
+    const MAX_LEFT = 400;
+    const MIN_RIGHT = 200;
+    const MAX_RIGHT = 450;
+    const HANDLE_W = 4;
+
+    // Load saved sizes or use defaults
+    const saved = _loadLayout();
+    let leftW = saved.leftW;
+    let rightW = saved.rightW;
+
+    function applyColumns() {
+        layout.style.gridTemplateColumns = `${leftW}px ${HANDLE_W}px 1fr ${HANDLE_W}px ${rightW}px`;
+    }
+
+    function saveLayout() {
+        localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify({ leftW, rightW }));
+    }
+
+    // Apply saved layout on load
+    applyColumns();
+
+    _makeDraggable(handleLeft, (dx) => {
+        leftW = Math.max(MIN_LEFT, Math.min(MAX_LEFT, leftW + dx));
+        applyColumns();
+    }, () => {
+        saveLayout();
+        Plotly.Plots.resize(document.getElementById('plotDiv'));
+    });
+
+    _makeDraggable(handleRight, (dx) => {
+        rightW = Math.max(MIN_RIGHT, Math.min(MAX_RIGHT, rightW - dx));
+        applyColumns();
+    }, () => {
+        saveLayout();
+        Plotly.Plots.resize(document.getElementById('plotDiv'));
+    });
+
+    // Reset layout button
+    document.getElementById('btnResetLayout')?.addEventListener('click', () => {
+        leftW = DEFAULT_LEFT;
+        rightW = DEFAULT_RIGHT;
+        applyColumns();
+        localStorage.removeItem(LAYOUT_STORAGE_KEY);
+        Plotly.Plots.resize(document.getElementById('plotDiv'));
+    });
+}
+
+function _loadLayout() {
+    try {
+        const raw = localStorage.getItem(LAYOUT_STORAGE_KEY);
+        if (raw) {
+            const data = JSON.parse(raw);
+            if (data.leftW && data.rightW) return data;
+        }
+    } catch { /* ignore */ }
+    return { leftW: DEFAULT_LEFT, rightW: DEFAULT_RIGHT };
+}
+
+function _makeDraggable(handle, onDrag, onEnd) {
+    let startX = 0;
+    let accumulated = 0;
+
+    handle.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        startX = e.clientX;
+        accumulated = 0;
+        handle.classList.add('active');
+        document.body.classList.add('resizing');
+
+        const onMove = (e) => {
+            const dx = e.clientX - startX;
+            onDrag(dx - accumulated);
+            accumulated = dx;
+        };
+
+        const onUp = () => {
+            handle.classList.remove('active');
+            document.body.classList.remove('resizing');
+            window.removeEventListener('mousemove', onMove);
+            window.removeEventListener('mouseup', onUp);
+            if (onEnd) onEnd();
+        };
+
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('mouseup', onUp);
+    });
 }
 
 // Boot

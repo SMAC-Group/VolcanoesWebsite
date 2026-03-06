@@ -4,6 +4,19 @@
 
 ---
 
+## Resizable Panels
+
+The 3-column layout includes draggable resize handles between panels. Drag the border between left/center or center/right to resize. Constraints:
+- Left panel: 180px min, 400px max
+- Right panel: 200px min, 450px max
+- Center (chart): takes remaining space (`1fr`)
+
+The Plotly chart is resized automatically when dragging ends. On mobile (<900px), handles are hidden and layout switches to single column.
+
+Panel sizes are persisted in `localStorage` (key `volcaninfos_layout`) and restored on page load. The "Reset layout" button in the header clears the saved sizes and restores defaults (255px / 275px).
+
+---
+
 ## `js/ui/sidebar.js`
 
 Left panel: axis selectors and volcano filter.

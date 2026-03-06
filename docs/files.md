@@ -8,10 +8,13 @@
 
 Application entry point. Defines the 3-column layout:
 
-- **Header**: logo, 2D/3D toggle, action buttons (Import, Add, Manage, Export, Contribute)
+- **Header**: logo, 2D/3D toggle, action buttons (Import, Add, Manage, Export, Contribute, Reset layout)
 - **Left panel** (`panel-left`): X/Y/Z axis selectors, color selector, "Invert Y" checkbox, volcano filter with search
+- **Resize handles** (`resize-handle`): draggable dividers between panels (col-resize cursor)
 - **Main area** (`main-area`): toolbar (lasso, rectangle, pan, reset, ellipses, labels) + `#plotDiv` (Plotly container)
 - **Right panel** (`panel-right`): selected point detail, selection statistics, selected points list, clear selection button
+
+Panels are resizable by dragging the handles. Min/max constraints: left 180–400px, right 200–450px.
 
 Also contains 5 modals (overlays): CSV upload, manual entry, manage user data, export, contribution.
 
@@ -71,6 +74,7 @@ Main orchestrator. Imports all modules and wires up events.
 - `init()`: loads data, initializes UI, wires all listeners
 - `renderChart()`: determines active view (2D/3D), filters rows, delegates to the appropriate chart module
 - `setView(v)`: toggles 2D/3D, updates toolbar and Z selector state
+- `_initResize()`: sets up draggable resize handles between the 3 panels (min/max constraints, Plotly resize on end)
 - `setTool(mode)`: changes Plotly interaction mode (`lasso`, `select`, `pan`)
 - `resetView()`: resets camera/axes to initial position
 - `toggleEllipses()` / `toggleLabels()`: toggles visual overlays
