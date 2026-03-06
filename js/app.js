@@ -71,7 +71,11 @@ async function init() {
     Events.on(EVT.SELECTION_CHANGED, (selected) => {
         DetailPanel.updateSelectionInfo(selected, API.getAllRows());
     });
-    document.getElementById('btnClearSelection')?.addEventListener('click', () => Selection.clearAll());
+    document.getElementById('btnClearSelection')?.addEventListener('click', () => {
+        Selection.clearAll();
+        // Reset Plotly's visual selection highlight by re-rendering
+        renderChart();
+    });
 
     // Data update (after CSV upload or manual entry)
     Events.on(EVT.DATA_UPDATED, () => {
@@ -86,7 +90,10 @@ async function init() {
 
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') Selection.clearAll();
+        if (e.key === 'Escape') {
+            Selection.clearAll();
+            renderChart();
+        }
     });
 
     // Prevent default middle-click auto-scroll on the plot
