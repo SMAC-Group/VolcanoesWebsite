@@ -84,12 +84,13 @@ async function init() {
     document.getElementById('btnExport')?.addEventListener('click', () => Modals.openExport());
     document.getElementById('btnAddManual')?.addEventListener('click', () => Modals.openManualEntry());
 
-    // Sidebar filter
+    // Sidebar filter — filters checkbox list + chart points
     document.getElementById('filterSearch')?.addEventListener('input', (e) => {
         const query = e.target.value.toLowerCase();
         document.querySelectorAll('#volcanoList label').forEach(label => {
             label.style.display = label.textContent.toLowerCase().includes(query) ? '' : 'none';
         });
+        renderChart();
     });
 
     // Selection (lasso / rectangle)
@@ -179,14 +180,23 @@ function renderChart() {
 
 function _getFilteredRows() {
     const all = API.getAllRows();
-    const active = Sidebar.getActiveFilters();
-    if (!active) return all;
-
     const catCols = API.getCategoricalHeaders();
     const volcanoCol = catCols[0];
     if (!volcanoCol) return all;
 
-    return all.filter(r => active.includes(r[volcanoCol]));
+    // Checkbox filter
+    const active = Sidebar.getActiveFilters();
+    // Search bar filter
+    const query = (document.getElementById('filterSearch')?.value || '').toLowerCase().trim();
+
+    if (!active && !query) return all;
+
+    return all.filter(r => {
+        const name = (r[volcanoCol] ?? '').toString().toLowerCase();
+        if (active && !active.includes(r[volcanoCol])) return false;
+        if (query && !name.includes(query)) return false;
+        return true;
+    });
 }
 
 function setView(v) {
