@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VolcanoDB — Visualisation Interactive</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.27.0/plotly.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c10; --bg2: #111318; --bg3: #181c24;
+    --border: #252932; --accent: #e85d2f; --accent2: #f0a050;
+    --purple: #7c5cbf; --teal: #2ab8a0;
+    --text: #e8e4dc; --muted: #6b7280;
+    --font-head: 'Syne', sans-serif; --font-mono: 'Space Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-mono); min-height: 100vh; overflow-x: hidden; }
+
+  header { display: flex; align-items: center; justify-content: space-between; padding: 14px 28px; border-bottom: 1px solid var(--border); background: var(--bg); position: sticky; top: 0; z-index: 100; }
+  .logo { font-family: var(--font-head); font-weight: 800; font-size: 1.4rem; letter-spacing: -0.03em; }
+  .logo span { color: var(--accent); }
+  .header-right { display: flex; align-items: center; gap: 10px; }
+
+  .view-toggle { display: flex; background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+  .view-btn { background: transparent; border: none; color: var(--muted); padding: 7px 18px; font-family: var(--font-mono); font-size: 0.72rem; cursor: pointer; transition: all 0.2s; }
+  .view-btn.active { background: var(--accent); color: white; }
+  .view-btn:not(.active):hover { color: var(--text); }
+
+  .pill { background: var(--bg3); border: 1px solid var(--border); border-radius: 20px; padding: 6px 14px; font-size: 0.72rem; color: var(--muted); cursor: pointer; transition: all 0.2s; font-family: var(--font-mono); }
+  .pill:hover { border-color: var(--accent); color: var(--accent); }
+
+  .layout { display: grid; grid-template-columns: 255px 1fr 275px; height: calc(100vh - 57px); }
+
+  .panel-left { border-right: 1px solid var(--border); padding: 18px 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 18px; }
+  .section-label { font-size: 0.62rem; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 8px; }
+
+  .method-toggle { display: flex; gap: 4px; background: var(--bg3); border: 1px solid var(--border); border-radius: 4px; padding: 4px; }
+  .method-btn { flex: 1; background: transparent; border: none; color: var(--muted); padding: 5px; font-family: var(--font-mono); font-size: 0.6rem; cursor: pointer; border-radius: 3px; transition: all 0.15s; }
+  .method-btn.active { background: var(--accent); color: white; }
+
+  .axis-selector { display: flex; flex-direction: column; gap: 6px; }
+  .axis-row { display: flex; align-items: center; gap: 8px; }
+  .axis-label { font-size: 0.65rem; color: var(--muted); width: 14px; text-align: center; font-weight: 700; }
+  .axis-label.z-lbl { color: var(--teal); }
+  select.axis-pick { flex: 1; background: var(--bg3); border: 1px solid var(--border); color: var(--text); padding: 5px 8px; font-family: var(--font-mono); font-size: 0.63rem; border-radius: 3px; outline: none; cursor: pointer; }
+  select.axis-pick:focus { border-color: var(--accent); }
+  .z-row { transition: opacity 0.3s; }
+  .z-row.dimmed { opacity: 0.3; pointer-events: none; }
+
+  .filter-row { display: flex; flex-direction: column; gap: 3px; }
+  .filter-row label { font-size: 0.62rem; color: var(--muted); }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+
+  .btn { background: var(--bg3); border: 1px solid var(--border); color: var(--text); padding: 7px 10px; font-family: var(--font-mono); font-size: 0.7rem; cursor: pointer; border-radius: 4px; text-align: left; transition: all 0.15s; display: flex; align-items: center; gap: 8px; }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn.active { background: #2a1208; border-color: var(--accent); color: var(--accent); }
+  .btn .icon { font-size: 1rem; }
+  .control-group { display: flex; flex-direction: column; gap: 7px; }
+
+  .upload-zone { border: 1px dashed var(--border); border-radius: 6px; padding: 14px 10px; text-align: center; cursor: pointer; transition: all 0.2s; font-size: 0.63rem; color: var(--muted); line-height: 1.7; }
+  .upload-zone:hover { border-color: var(--accent2); color: var(--accent2); background: #1a150a; }
+  .upload-zone .up-icon { font-size: 1.4rem; display: block; margin-bottom: 5px; }
+  #fileInput { display: none; }
+
+  .main-area { display: flex; flex-direction: column; overflow: hidden; }
+  .plot-toolbar { display: flex; align-items: center; gap: 7px; padding: 9px 14px; border-bottom: 1px solid var(--border); background: var(--bg2); }
+  .toolbar-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 4px 10px; font-family: var(--font-mono); font-size: 0.63rem; cursor: pointer; border-radius: 3px; transition: all 0.15s; white-space: nowrap; }
+  .toolbar-btn:hover { border-color: var(--text); color: var(--text); }
+  .toolbar-btn.active { border-color: var(--accent); color: var(--accent); background: #1a0a05; }
+  .toolbar-sep { width: 1px; height: 18px; background: var(--border); margin: 0 3px; }
+  .toolbar-info { margin-left: auto; font-size: 0.63rem; color: var(--muted); }
+  #selectionCount { color: var(--accent2); }
+
+  .hint-3d { background: #0d1a22; border: 1px solid #1a3a50; border-radius: 4px; padding: 5px 12px; font-size: 0.62rem; color: #4a9fc0; white-space: nowrap; }
+
+  #plotDiv { flex: 1; min-height: 0; }
+
+  .panel-right { border-left: 1px solid var(--border); padding: 18px 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 18px; }
+  .volcano-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 12px; font-size: 0.68rem; line-height: 1.9; }
+  .volcano-card .name { font-family: var(--font-head); font-weight: 600; font-size: 0.95rem; color: var(--accent2); margin-bottom: 7px; }
+  .volcano-card .prop { display: flex; justify-content: space-between; }
+  .volcano-card .prop .key { color: var(--muted); }
+
+  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+  .stat-box { background: var(--bg3); border: 1px solid var(--border); border-radius: 4px; padding: 7px 8px; text-align: center; }
+  .stat-box .sval { font-family: var(--font-head); font-size: 1.05rem; font-weight: 600; color: var(--accent2); }
+  .stat-box .slabel { font-size: 0.55rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+
+  .selection-list { display: flex; flex-direction: column; gap: 4px; max-height: 180px; overflow-y: auto; }
+  .sel-item { background: var(--bg3); border: 1px solid var(--border); border-radius: 3px; padding: 5px 8px; font-size: 0.62rem; color: var(--muted); cursor: pointer; display: flex; justify-content: space-between; transition: all 0.1s; }
+  .sel-item:hover { border-color: var(--accent2); color: var(--text); }
+  .empty-state { color: var(--muted); font-size: 0.68rem; text-align: center; padding: 16px 0; line-height: 1.8; }
+
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 26px; width: 450px; max-width: 95vw; }
+  .modal h2 { font-family: var(--font-head); font-size: 1.05rem; margin-bottom: 14px; }
+  .modal p { font-size: 0.7rem; color: var(--muted); line-height: 1.6; margin-bottom: 14px; }
+  .modal input, .modal textarea { width: 100%; background: var(--bg3); border: 1px solid var(--border); color: var(--text); padding: 7px 10px; font-family: var(--font-mono); font-size: 0.7rem; border-radius: 4px; margin-bottom: 9px; outline: none; transition: border 0.15s; }
+  .modal input:focus, .modal textarea:focus { border-color: var(--accent); }
+  .modal textarea { resize: vertical; min-height: 70px; }
+  .modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; }
+  .btn-primary { background: var(--accent); color: white; border: none; padding: 8px 18px; font-family: var(--font-mono); font-size: 0.7rem; cursor: pointer; border-radius: 4px; }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-cancel { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 8px 14px; font-family: var(--font-mono); font-size: 0.7rem; cursor: pointer; border-radius: 4px; }
+
+  .user-tag { display: inline-block; background: #1a2a10; border: 1px solid #3a6020; color: #7cdb50; padding: 1px 6px; border-radius: 3px; font-size: 0.58rem; margin-left: 5px; vertical-align: middle; }
+
+  ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: var(--bg); } ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Volcan<span>DB</span></div>
+  <div class="header-right">
+    <div class="view-toggle">
+      <button class="view-btn active" id="btn2d" onclick="setView('2d')">◧ Vue 2D</button>
+      <button class="view-btn" id="btn3d" onclick="setView('3d')">◈ Vue 3D</button>
+    </div>
+    <button class="pill" onclick="openModal()">⊕ Contribuer</button>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- LEFT -->
+  <div class="panel-left">
+
+    <div>
+      <div class="section-label">Réduction dimensionnelle</div>
+      <div class="method-toggle">
+        <button class="method-btn active" onclick="setMethod('umap',this)">UMAP</button>
+        <button class="method-btn" onclick="setMethod('tsne',this)">t-SNE</button>
+        <button class="method-btn" onclick="setMethod('pca',this)">PCA</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label">Axes du graphique</div>
+      <div class="axis-selector">
+        <div class="axis-row">
+          <span class="axis-label">X</span>
+          <select class="axis-pick" id="axisX" onchange="buildPlot()">
+            <option value="T" selected>Température (°C)</option>
+            <option value="P">Pression (kbar)</option>
+            <option value="SiO2">SiO₂ (wt%)</option>
+            <option value="H2O">H₂O (wt%)</option>
+            <option value="conf">Confiance (%)</option>
+          </select>
+        </div>
+        <div class="axis-row">
+          <span class="axis-label">Y</span>
+          <select class="axis-pick" id="axisY" onchange="buildPlot()">
+            <option value="T">Température (°C)</option>
+            <option value="P" selected>Pression (kbar)</option>
+            <option value="SiO2">SiO₂ (wt%)</option>
+            <option value="H2O">H₂O (wt%)</option>
+            <option value="conf">Confiance (%)</option>
+          </select>
+        </div>
+        <div class="axis-row z-row dimmed" id="zRow">
+          <span class="axis-label z-lbl">Z</span>
+          <select class="axis-pick" id="axisZ" onchange="buildPlot()">
+            <option value="SiO2" selected>SiO₂ (wt%)</option>
+            <option value="T">Température (°C)</option>
+            <option value="P">Pression (kbar)</option>
+            <option value="H2O">H₂O (wt%)</option>
+            <option value="conf">Confiance (%)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label">Filtres</div>
+      <div class="control-group">
+        <div class="filter-row">
+          <label>T min. <span id="tminVal">600</span> °C</label>
+          <input type="range" min="500" max="1200" value="600" id="tmin" oninput="updateFilter()">
+        </div>
+        <div class="filter-row">
+          <label>T max. <span id="tmaxVal">1650</span> °C</label>
+          <input type="range" min="600" max="1700" value="1650" id="tmax" oninput="updateFilter()">
+        </div>
+        <div class="filter-row">
+          <label>Confiance ≥ <span id="confVal">0</span>%</label>
+          <input type="range" min="0" max="100" value="0" id="confFilter" oninput="updateFilter()">
+        </div>
+      </div>
+    </div>
+
+    <div id="selTools">
+      <div class="section-label">Sélection (vue 2D)</div>
+      <div class="control-group">
+        <button class="btn active" id="btnLasso" onclick="setTool('lasso')"><span class="icon">⬡</span> Lasso</button>
+        <button class="btn" id="btnSelect" onclick="setTool('select')"><span class="icon">▣</span> Rectangle</button>
+        <button class="btn" id="btnPan" onclick="setTool('pan')"><span class="icon">✥</span> Déplacer</button>
+        <button class="btn" onclick="clearSelection()"><span class="icon">✕</span> Effacer sélection</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label">Ajouter mes données</div>
+      <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+        <span class="up-icon">⬆</span>
+        Glisser un CSV ici<br>ou cliquer pour parcourir
+      </div>
+      <input type="file" id="fileInput" accept=".csv" onchange="loadUserData(event)">
+    </div>
+
+  </div>
+
+  <!-- MAIN -->
+  <div class="main-area">
+    <div class="plot-toolbar">
+      <span id="tools2d" style="display:flex;align-items:center;gap:7px">
+        <button class="toolbar-btn active" id="tb-lasso" onclick="setTool('lasso')">⬡ Lasso</button>
+        <button class="toolbar-btn" id="tb-select" onclick="setTool('select')">▣ Rect.</button>
+        <button class="toolbar-btn" id="tb-pan" onclick="setTool('pan')">✥ Pan</button>
+        <button class="toolbar-btn" onclick="resetView()">⊡ Reset</button>
+        <div class="toolbar-sep"></div>
+        <button class="toolbar-btn active" id="tb-ellipses" onclick="toggleEllipses()">◎ Ellipses</button>
+        <button class="toolbar-btn" id="tb-labels" onclick="toggleLabels()">Aa Labels</button>
+      </span>
+      <span id="tools3d" style="display:none;align-items:center;gap:7px">
+        <div class="hint-3d">⟳ Orbiter · Shift+drag Pan · Scroll Zoom</div>
+        <button class="toolbar-btn" onclick="resetView()">⊡ Reset</button>
+        <div class="toolbar-sep"></div>
+        <button class="toolbar-btn" id="tb-labels3d" onclick="toggleLabels()">Aa Labels</button>
+      </span>
+      <div class="toolbar-info"><span id="selectionCount">0</span> sélect. · <span id="totalCount">0</span> pts</div>
+    </div>
+    <div id="plotDiv"></div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="panel-right">
+
+    <div>
+      <div class="section-label">Point sélectionné</div>
+      <div id="pointDetail"><div class="empty-state">Cliquez sur un point<br>pour voir ses données</div></div>
+    </div>
+
+    <div>
+      <div class="section-label">Statistiques sélection</div>
+      <div class="stats-row">
+        <div class="stat-box"><div class="sval" id="statN">—</div><div class="slabel">Points</div></div>
+        <div class="stat-box"><div class="sval" id="statT">—</div><div class="slabel">T moy.</div></div>
+        <div class="stat-box"><div class="sval" id="statP">—</div><div class="slabel">P moy.</div></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label">Sélection (<span id="selListCount">0</span>)</div>
+      <div class="selection-list" id="selectionList">
+        <div class="empty-state">Utilisez le lasso ou<br>le rectangle (vue 2D)</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label">Actions</div>
+      <div class="control-group">
+        <button class="btn" onclick="exportSelection()"><span class="icon">↓</span> Exporter CSV</button>
+        <button class="btn" onclick="openModal()"><span class="icon">✉</span> Soumettre au projet</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h2>⊕ Contribuer au projet</h2>
+    <p>Vos données seront envoyées aux responsables du projet pour intégration après validation. Elles sont actuellement stockées uniquement dans votre navigateur.</p>
+    <input type="text" placeholder="Votre nom / institution" id="contribName">
+    <input type="email" placeholder="Email de contact" id="contribEmail">
+    <textarea placeholder="Contexte géologique, méthodes d'analyse..."></textarea>
+    <div style="font-size:0.63rem;color:var(--muted);margin-bottom:10px">⚑ <span id="userDataSummary">Aucune donnée utilisateur chargée</span></div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+      <button class="btn-primary" onclick="submitData()">Envoyer ✉</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const CLUSTERS = [
+  { name:"Basaltes OIB",  color:"#e85d2f", center:[600, 4],  spread:[60, 2.5] },
+  { name:"Andésites arc", color:"#7c5cbf", center:[900, 15], spread:[80, 4]   },
+  { name:"Rhyolites",     color:"#2ab8a0", center:[750, 10], spread:[50, 3]   },
+  { name:"Phonolites",    color:"#f0a050", center:[1200,7],  spread:[90, 3.5] },
+  { name:"Basaltes MORB", color:"#c06040", center:[1300,18], spread:[70, 3]   },
+  { name:"Trachytes",     color:"#a070d0", center:[1100,22], spread:[65, 3]   },
+  { name:"Dacites",       color:"#40b898", center:[1500,28], spread:[55, 2]   },
+  { name:"Néphélinites",  color:"#c0a0e0", center:[1580,10], spread:[40, 2.5] },
+];
+const NAMES = ["Etna","Piton de la Fournaise","Kilauea","Vesuve","Stromboli","Santorini",
+  "Eyjafjallajokull","Merapi","Fuji","Krakatau","Mont St Helens","Popocatepetl",
+  "Mauna Loa","Nyiragongo","Campi Flegrei","Taal","Ruapehu","Villarrica","Cotopaxi","Tambora"];
+const AXIS_LABELS = { T:'Température (°C)', P:'Pression (kbar)', SiO2:'SiO₂ (wt%)', H2O:'H₂O (wt%)', conf:'Confiance (%)' };
+
+let rawData=[], userData=[], selectedPoints=new Set();
+let showEllipses=true, showLabels=false, currentView='2d';
+
+function rnd(m,s){ let u=0,v=0; while(!u)u=Math.random(); while(!v)v=Math.random(); return m+s*Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+
+function generateData(){
+  rawData=[]; let id=0;
+  CLUSTERS.forEach((cl,ci)=>{
+    const n=28+Math.floor(Math.random()*40);
+    for(let i=0;i<n;i++){
+      rawData.push({ id:id++, T:Math.round(rnd(cl.center[0],cl.spread[0])), P:Math.round(rnd(cl.center[1],cl.spread[1])*10)/10, SiO2:Math.round((45+Math.random()*30)*10)/10, H2O:Math.round((0.5+Math.random()*5)*100)/100, conf:Math.round((70+Math.random()*29)*10)/10, cluster:ci, clusterName:cl.name, isOOS:Math.random()<0.11, name:NAMES[Math.floor(Math.random()*NAMES.length)], isUser:false });
+    }
+  });
+}
+
+function getVal(d,ax){ return d[ax]; }
+function getVisible(){ const tmin=+tmin_el.value,tmax=+tmax_el.value,cmin=+conf_el.value; return [...rawData,...userData].filter(d=>d.T>=tmin&&d.T<=tmax&&d.conf>=cmin); }
+function hexToRgba(hex,a){ const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16); return `rgba(${r},${g},${b},${a})`; }
+
+const tmin_el=document.getElementById('tmin'), tmax_el=document.getElementById('tmax'), conf_el=document.getElementById('confFilter');
+
+function buildPlot(){ currentView==='3d' ? build3D() : build2D(); }
+
+function build2D(){
+  const ax=document.getElementById('axisX').value, ay=document.getElementById('axisY').value;
+  const visible=getVisible();
+  document.getElementById('totalCount').textContent=visible.length;
+  const traces=[];
+
+  CLUSTERS.forEach((cl,ci)=>{
+    const pts=visible.filter(d=>d.cluster===ci&&!d.isOOS&&!d.isUser);
+    if(!pts.length) return;
+    traces.push({ x:pts.map(d=>getVal(d,ax)), y:pts.map(d=>getVal(d,ay)), mode:'markers', type:'scatter', name:cl.name, customdata:pts,
+      marker:{ symbol:'triangle-up', size:8, color:'#3a4455', line:{color:cl.color,width:0.9} },
+      hovertemplate:`<b>%{customdata.name}</b><br>${AXIS_LABELS[ax]}=%{x}<br>${AXIS_LABELS[ay]}=%{y}<br>%{customdata.clusterName}<br>Conf: %{customdata.conf}%<extra></extra>` });
+  });
+
+  const oos=visible.filter(d=>d.isOOS&&!d.isUser);
+  if(oos.length) traces.push({ x:oos.map(d=>getVal(d,ax)), y:oos.map(d=>getVal(d,ay)), mode:'markers', type:'scatter', name:'Prédiction OOS', customdata:oos,
+    marker:{symbol:'triangle-up-open',size:13,color:'#f0a050',line:{color:'#f0a050',width:2}},
+    hovertemplate:`<b>OOS: %{customdata.name}</b><br>Conf: %{customdata.conf}%<extra></extra>` });
+
+  const uPts=visible.filter(d=>d.isUser);
+  if(uPts.length) traces.push({ x:uPts.map(d=>getVal(d,ax)), y:uPts.map(d=>getVal(d,ay)), mode:'markers', type:'scatter', name:'⊕ Mes données', customdata:uPts,
+    marker:{symbol:'circle',size:10,color:'#7cdb50',line:{color:'#3a6020',width:1.5}},
+    hovertemplate:`<b>[USER] %{customdata.name}</b><br>${AXIS_LABELS[ax]}=%{x}<br>${AXIS_LABELS[ay]}=%{y}<extra></extra>` });
+
+  if(showEllipses){
+    CLUSTERS.forEach((cl,ci)=>{
+      const pts=visible.filter(d=>d.cluster===ci&&!d.isUser); if(pts.length<5) return;
+      const xs=pts.map(d=>getVal(d,ax)), ys=pts.map(d=>getVal(d,ay));
+      const mx=xs.reduce((a,b)=>a+b,0)/xs.length, my=ys.reduce((a,b)=>a+b,0)/ys.length;
+      const sx=Math.sqrt(xs.map(x=>(x-mx)**2).reduce((a,b)=>a+b,0)/xs.length)*1.9;
+      const sy=Math.sqrt(ys.map(y=>(y-my)**2).reduce((a,b)=>a+b,0)/ys.length)*1.9;
+      const th=Array.from({length:60},(_,i)=>i/59*2*Math.PI);
+      traces.push({ x:th.map(t=>mx+sx*Math.cos(t)), y:th.map(t=>my+sy*Math.sin(t)), mode:'lines', type:'scatter', showlegend:false, hoverinfo:'skip', line:{color:cl.color,width:1.5,dash:'dot'}, fill:'toself', fillcolor:hexToRgba(cl.color,0.07) });
+      if(showLabels) traces.push({ x:[mx], y:[my-sy*1.1], mode:'text', type:'scatter', showlegend:false, hoverinfo:'skip', text:[cl.name], textfont:{color:cl.color,size:9,family:'Space Mono'} });
+    });
+  }
+
+  const reverseY=ay==='P';
+  Plotly.react('plotDiv', traces, {
+    paper_bgcolor:'#111318', plot_bgcolor:'#0d1017',
+    font:{family:'Space Mono,monospace',color:'#e8e4dc',size:10},
+    xaxis:{title:{text:AXIS_LABELS[ax],font:{size:11}},gridcolor:'#1e2330',zerolinecolor:'#252932',color:'#6b7280'},
+    yaxis:{title:{text:AXIS_LABELS[ay],font:{size:11}},autorange:reverseY?'reversed':true,gridcolor:'#1e2330',zerolinecolor:'#404860',color:'#6b7280'},
+    legend:{bgcolor:'#0d1017',bordercolor:'#252932',borderwidth:1,font:{size:9},x:0.01,y:0.01,xanchor:'left',yanchor:'bottom'},
+    margin:{l:52,r:20,t:16,b:50}, dragmode:'lasso', hovermode:'closest',
+    shapes:ax==='T'&&ay==='P'?[{type:'line',x0:500,x1:1700,y0:0,y1:0,line:{color:'#404860',width:1.5,dash:'dash'}}]:[],
+    modebar:{bgcolor:'transparent',color:'#6b7280',activecolor:'#e85d2f'},
+  }, {responsive:true,displayModeBar:false,scrollZoom:true});
+
+  const el=document.getElementById('plotDiv');
+  el.on('plotly_selected', onSelected);
+  el.on('plotly_click', onClick);
+  el.on('plotly_deselect', clearSelection);
+}
+
+function build3D(){
+  const ax=document.getElementById('axisX').value, ay=document.getElementById('axisY').value, az=document.getElementById('axisZ').value;
+  const visible=getVisible();
+  document.getElementById('totalCount').textContent=visible.length;
+  const traces=[];
+
+  CLUSTERS.forEach((cl,ci)=>{
+    const pts=visible.filter(d=>d.cluster===ci&&!d.isOOS&&!d.isUser); if(!pts.length) return;
+    traces.push({ x:pts.map(d=>getVal(d,ax)), y:pts.map(d=>getVal(d,ay)), z:pts.map(d=>getVal(d,az)),
+      mode:showLabels?'markers+text':'markers', type:'scatter3d', name:cl.name, customdata:pts,
+      text:showLabels?pts.map(d=>d.name):undefined, textfont:{size:7,color:cl.color},
+      marker:{size:4.5,color:'#3a4455',line:{color:cl.color,width:1.2}},
+      hovertemplate:`<b>%{customdata.name}</b><br>${AXIS_LABELS[ax]}=%{x}<br>${AXIS_LABELS[ay]}=%{y}<br>${AXIS_LABELS[az]}=%{z}<br>%{customdata.clusterName}<extra></extra>` });
+  });
+
+  const oos=visible.filter(d=>d.isOOS&&!d.isUser);
+  if(oos.length) traces.push({ x:oos.map(d=>getVal(d,ax)), y:oos.map(d=>getVal(d,ay)), z:oos.map(d=>getVal(d,az)),
+    mode:'markers', type:'scatter3d', name:'Prédiction OOS', customdata:oos,
+    marker:{size:8,color:'#f0a050',symbol:'diamond',line:{color:'#c07020',width:1}},
+    hovertemplate:`<b>OOS: %{customdata.name}</b><br>Conf: %{customdata.conf}%<extra></extra>` });
+
+  const uPts=visible.filter(d=>d.isUser);
+  if(uPts.length) traces.push({ x:uPts.map(d=>getVal(d,ax)), y:uPts.map(d=>getVal(d,ay)), z:uPts.map(d=>getVal(d,az)),
+    mode:'markers', type:'scatter3d', name:'⊕ Mes données', customdata:uPts,
+    marker:{size:7,color:'#7cdb50',symbol:'circle',line:{color:'#3a6020',width:1}},
+    hovertemplate:`<b>[USER] %{customdata.name}</b><extra></extra>` });
+
+  // Centroids with labels
+  const cx=[],cy=[],cz=[],ct=[],cc=[];
+  CLUSTERS.forEach((cl,ci)=>{
+    const pts=visible.filter(d=>d.cluster===ci); if(!pts.length) return;
+    cx.push(pts.map(d=>getVal(d,ax)).reduce((a,b)=>a+b,0)/pts.length);
+    cy.push(pts.map(d=>getVal(d,ay)).reduce((a,b)=>a+b,0)/pts.length);
+    cz.push(pts.map(d=>getVal(d,az)).reduce((a,b)=>a+b,0)/pts.length);
+    ct.push(cl.name); cc.push(cl.color);
+  });
+  if(cx.length) traces.push({ x:cx, y:cy, z:cz, mode:'markers+text', type:'scatter3d', name:'Centroides', showlegend:false,
+    text:ct, textfont:{size:9,color:cc}, textposition:'top center',
+    marker:{size:10,color:cc,symbol:'circle-open',line:{width:2,color:cc}}, hoverinfo:'text' });
+
+  const reverseY=ay==='P';
+  Plotly.react('plotDiv', traces, {
+    paper_bgcolor:'#111318',
+    font:{family:'Space Mono,monospace',color:'#e8e4dc',size:9},
+    scene:{
+      bgcolor:'#0d1017',
+      xaxis:{title:AXIS_LABELS[ax],gridcolor:'#1e2330',zerolinecolor:'#252932',color:'#6b7280',tickfont:{size:8}},
+      yaxis:{title:AXIS_LABELS[ay],gridcolor:'#1e2330',zerolinecolor:'#252932',color:'#6b7280',tickfont:{size:8},autorange:reverseY?'reversed':true},
+      zaxis:{title:AXIS_LABELS[az],gridcolor:'#1e2330',zerolinecolor:'#252932',color:'#6b7280',tickfont:{size:8}},
+      camera:{eye:{x:1.6,y:1.6,z:0.9}},
+    },
+    legend:{bgcolor:'#0d101788',bordercolor:'#252932',borderwidth:1,font:{size:8}},
+    margin:{l:0,r:0,t:20,b:0}, hovermode:'closest',
+    modebar:{bgcolor:'transparent',color:'#6b7280',activecolor:'#e85d2f'},
+  }, {responsive:true,displayModeBar:false,scrollZoom:true});
+
+  document.getElementById('plotDiv').on('plotly_click', onClick);
+}
+
+function setView(v){
+  currentView=v;
+  document.getElementById('btn2d').classList.toggle('active',v==='2d');
+  document.getElementById('btn3d').classList.toggle('active',v==='3d');
+  document.getElementById('tools2d').style.display=v==='2d'?'flex':'none';
+  document.getElementById('tools3d').style.display=v==='3d'?'flex':'none';
+  document.getElementById('zRow').classList.toggle('dimmed',v==='2d');
+  buildPlot();
+}
+
+function onSelected(evt){ if(!evt||!evt.points) return; selectedPoints.clear(); evt.points.forEach(p=>{if(p.customdata)selectedPoints.add(p.customdata.id);}); updateUI(); }
+function onClick(evt){ if(!evt||!evt.points.length) return; const d=evt.points[0].customdata; if(!d) return;
+  document.getElementById('pointDetail').innerHTML=`<div class="volcano-card"><div class="name">${d.name}${d.isUser?' <span class="user-tag">VOUS</span>':''}</div><div class="prop"><span class="key">Cluster</span><span class="val">${d.clusterName}</span></div><div class="prop"><span class="key">Température</span><span class="val">${d.T} °C</span></div><div class="prop"><span class="key">Pression</span><span class="val">${d.P} kbar</span></div><div class="prop"><span class="key">SiO₂</span><span class="val">${d.SiO2.toFixed(1)} wt%</span></div><div class="prop"><span class="key">H₂O</span><span class="val">${d.H2O.toFixed(2)} wt%</span></div><div class="prop"><span class="key">Confiance</span><span class="val" style="color:var(--accent2)">${d.conf}%</span></div></div>`;
+  selectedPoints.add(d.id); updateUI();
+}
+
+function updateUI(){
+  const all=[...rawData,...userData], sel=all.filter(d=>selectedPoints.has(d.id));
+  document.getElementById('selectionCount').textContent=sel.length;
+  document.getElementById('selListCount').textContent=sel.length;
+  if(sel.length){
+    document.getElementById('statN').textContent=sel.length;
+    document.getElementById('statT').textContent=Math.round(sel.reduce((a,d)=>a+d.T,0)/sel.length);
+    document.getElementById('statP').textContent=(sel.reduce((a,d)=>a+d.P,0)/sel.length).toFixed(1);
+    document.getElementById('selectionList').innerHTML=sel.slice(0,20).map(d=>`<div class="sel-item"><span>${d.name}</span><span style="color:var(--accent2)">${d.T}°C</span></div>`).join('')+(sel.length>20?`<div class="sel-item" style="justify-content:center">… et ${sel.length-20} autres</div>`:'');
+  } else {
+    ['statN','statT','statP'].forEach(id=>document.getElementById(id).textContent='—');
+    document.getElementById('selectionList').innerHTML='<div class="empty-state">Utilisez le lasso ou<br>le rectangle (vue 2D)</div>';
+  }
+}
+
+function clearSelection(){ selectedPoints.clear(); document.getElementById('selectionCount').textContent='0'; updateUI(); }
+function setTool(mode){ if(currentView==='3d') return; Plotly.relayout('plotDiv',{dragmode:mode}); ['lasso','select','pan'].forEach(t=>{document.getElementById('btn'+t[0].toUpperCase()+t.slice(1))?.classList.remove('active');document.getElementById('tb-'+t)?.classList.remove('active');}); document.getElementById('btn'+mode[0].toUpperCase()+mode.slice(1))?.classList.add('active'); document.getElementById('tb-'+mode)?.classList.add('active'); }
+function resetView(){ if(currentView==='3d') Plotly.relayout('plotDiv',{'scene.camera':{eye:{x:1.6,y:1.6,z:0.9}}}); else Plotly.relayout('plotDiv',{'xaxis.autorange':true,'yaxis.autorange':true}); }
+function toggleEllipses(){ showEllipses=!showEllipses; document.getElementById('tb-ellipses').classList.toggle('active',showEllipses); buildPlot(); }
+function toggleLabels(){ showLabels=!showLabels; document.getElementById('tb-labels')?.classList.toggle('active',showLabels); document.getElementById('tb-labels3d')?.classList.toggle('active',showLabels); buildPlot(); }
+function updateFilter(){ document.getElementById('tminVal').textContent=tmin_el.value; document.getElementById('tmaxVal').textContent=tmax_el.value; document.getElementById('confVal').textContent=conf_el.value; buildPlot(); }
+function setMethod(m,btn){ document.querySelectorAll('.method-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); generateData(); buildPlot(); }
+
+function loadUserData(evt){
+  const file=evt.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=(e)=>{
+    const lines=e.target.result.split('\n').filter(l=>l.trim());
+    const hdrs=lines[0].split(',').map(h=>h.trim().toLowerCase());
+    const ti=hdrs.findIndex(h=>h.includes('temp')||h==='t'), pi=hdrs.findIndex(h=>h.includes('pres')||h==='p'), ni=hdrs.findIndex(h=>h.includes('name')||h.includes('nom'));
+    userData=[];
+    lines.slice(1).forEach((line,i)=>{ const cols=line.split(','); const T=ti>=0?+cols[ti]:900+Math.random()*400, P=pi>=0?+cols[pi]:5+Math.random()*20; if(isNaN(T)||isNaN(P)) return; userData.push({id:10000+i,T:Math.round(T),P:Math.round(P*10)/10,SiO2:50+Math.random()*20,H2O:1+Math.random()*3,conf:80+Math.random()*15,cluster:Math.floor(Math.random()*CLUSTERS.length),clusterName:'Utilisateur',isOOS:false,name:ni>=0?cols[ni].trim():`Éch-${i+1}`,isUser:true}); });
+    localStorage.setItem('volcanodb_userdata',JSON.stringify(userData));
+    document.getElementById('userDataSummary').textContent=`${userData.length} points depuis "${file.name}"`;
+    buildPlot(); alert(`✓ ${userData.length} points chargés (affichés en vert).`);
+  };
+  reader.readAsText(file);
+}
+
+function openModal(){ document.getElementById('modalOverlay').classList.add('open'); }
+function closeModal(){ document.getElementById('modalOverlay').classList.remove('open'); }
+function submitData(){ const name=document.getElementById('contribName').value, email=document.getElementById('contribEmail').value; if(!email){alert('Email requis.');return;} window.open(`mailto:volcanodb@exemple.fr?subject=${encodeURIComponent('[VolcanoDB] Contribution – '+(name||email))}&body=${encodeURIComponent(`Nom: ${name}\nEmail: ${email}\n\nDonnées:\n${JSON.stringify(userData.slice(0,5),null,2)}`)}`); closeModal(); }
+function exportSelection(){ const sel=[...rawData,...userData].filter(d=>selectedPoints.has(d.id)); if(!sel.length){alert('Aucun point sélectionné.');return;} const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([['name,cluster,T,P,SiO2,H2O,conf,isOOS',...sel.map(d=>`${d.name},${d.clusterName},${d.T},${d.P},${d.SiO2.toFixed(1)},${d.H2O.toFixed(2)},${d.conf},${d.isOOS}`)].join('\n')],{type:'text/csv'})); a.download='volcanodb_selection.csv'; a.click(); }
+
+// Init
+try{ const s=localStorage.getItem('volcanodb_userdata'); if(s){userData=JSON.parse(s);document.getElementById('userDataSummary').textContent=`${userData.length} pts en cache.`;} }catch(e){}
+document.getElementById('modalOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('modalOverlay'))closeModal();});
+document.getElementById('tb-ellipses').classList.add('active');
+generateData();
+buildPlot();
+</script>
+</body>
+</html>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VolcanInfos — Visualisation Interactive</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.27.0/plotly.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- Cache warning banner -->
+<div id="cacheWarning" class="cache-warning" style="display:none">
+    <span>&#9888; Des données locales sont stockées dans votre navigateur. Elles ne sont pas sauvegardées sur le serveur.</span>
+</div>
+
+<header>
+    <div class="logo">Volcan<span>Infos</span></div>
+    <div class="header-right">
+        <div class="view-toggle">
+            <button class="view-btn active" id="btn2d">&#9639; Vue 2D</button>
+            <button class="view-btn" id="btn3d">&#9672; Vue 3D</button>
+        </div>
+        <button class="pill" id="btnUpload">&#8679; Importer CSV</button>
+        <button class="pill" id="btnAddManual">&#8853; Ajouter</button>
+        <button class="pill" id="btnExport">&#8615; Exporter</button>
+        <button class="pill" id="btnContribute">&#9993; Contribuer</button>
+    </div>
+</header>
+
+<div class="layout">
+
+    <!-- LEFT PANEL -->
+    <div class="panel-left">
+
+        <div>
+            <div class="section-label">Axes du graphique</div>
+            <div class="axis-selector">
+                <div class="axis-row">
+                    <span class="axis-label">X</span>
+                    <select class="axis-pick" id="axisX"></select>
+                </div>
+                <div class="axis-row">
+                    <span class="axis-label">Y</span>
+                    <select class="axis-pick" id="axisY"></select>
+                </div>
+                <div class="axis-row z-row dimmed" id="zRow">
+                    <span class="axis-label z-lbl">Z</span>
+                    <select class="axis-pick" id="axisZ"></select>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <div class="section-label">Couleur</div>
+            <select class="axis-pick" id="colorSelect"></select>
+            <label class="checkbox-row">
+                <input type="checkbox" id="invertY"> Inverser axe Y
+            </label>
+        </div>
+
+        <div>
+            <div class="section-label">Filtrer par volcan</div>
+            <input type="text" class="search-input" id="filterSearch" placeholder="Rechercher...">
+            <div class="volcano-list" id="volcanoList"></div>
+        </div>
+
+    </div>
+
+    <!-- MAIN CHART -->
+    <div class="main-area">
+        <div class="plot-toolbar">
+            <span id="tools2d" style="display:flex;align-items:center;gap:7px">
+                <button class="toolbar-btn active" id="tb-lasso">&#11041; Lasso</button>
+                <button class="toolbar-btn" id="tb-select">&#9635; Rect.</button>
+                <button class="toolbar-btn" id="tb-pan">&#10021; Pan</button>
+                <button class="toolbar-btn" id="tb-reset">&#8865; Reset</button>
+                <div class="toolbar-sep"></div>
+                <button class="toolbar-btn active" id="tb-ellipses">&#9678; Ellipses</button>
+                <button class="toolbar-btn" id="tb-labels">Aa Labels</button>
+            </span>
+            <span id="tools3d" style="display:none;align-items:center;gap:7px">
+                <div class="hint-3d">&#10227; Orbiter &middot; Shift+drag Pan &middot; Scroll Zoom</div>
+                <button class="toolbar-btn" id="tb-reset3d">&#8865; Reset</button>
+                <div class="toolbar-sep"></div>
+                <button class="toolbar-btn" id="tb-labels3d">Aa Labels</button>
+            </span>
+            <div class="toolbar-info">
+                <span id="selectionCount">0</span> s&eacute;lect. &middot; <span id="totalCount">0</span> pts
+            </div>
+        </div>
+        <div id="plotDiv"></div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="panel-right">
+
+        <div>
+            <div class="section-label">Point s&eacute;lectionn&eacute;</div>
+            <div id="pointDetail"><div class="empty-state">Cliquez sur un point<br>pour voir ses donn&eacute;es</div></div>
+        </div>
+
+        <div>
+            <div class="section-label">Statistiques s&eacute;lection</div>
+            <div class="stats-row">
+                <div class="stat-box"><div class="sval" id="statN">&mdash;</div><div class="slabel">Points</div></div>
+                <div class="stat-box"><div class="sval" id="statT">&mdash;</div><div class="slabel">Col 1</div></div>
+                <div class="stat-box"><div class="sval" id="statP">&mdash;</div><div class="slabel">Col 2</div></div>
+            </div>
+        </div>
+
+        <div>
+            <div class="section-label">S&eacute;lection (<span id="selListCount">0</span>)</div>
+            <div class="selection-list" id="selectionList">
+                <div class="empty-state">Utilisez le lasso ou<br>le rectangle (vue 2D)</div>
+            </div>
+        </div>
+
+        <div>
+            <div class="section-label">Actions</div>
+            <div class="control-group">
+                <button class="btn" id="btnClearSelection">&#10005; Effacer s&eacute;lection</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- MODAL: Upload CSV -->
+<div class="modal-overlay" id="modalUpload">
+    <div class="modal">
+        <h2>&#8679; Importer un fichier CSV</h2>
+        <div class="upload-zone" id="dropZone">
+            <span class="up-icon">&#11014;</span>
+            Glisser un CSV ici<br>ou cliquer pour parcourir
+        </div>
+        <input type="file" id="fileInput" accept=".csv" style="display:none">
+        <div id="uploadPreview" class="hidden">
+            <h3>Aper&ccedil;u</h3>
+            <div id="previewTableContainer"></div>
+            <div id="uploadErrors"></div>
+            <button class="btn-primary" id="btnConfirmUpload">Confirmer l'import</button>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel modal-close">Annuler</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: Manual entry -->
+<div class="modal-overlay" id="modalAdd">
+    <div class="modal">
+        <h2>&#8853; Ajouter des donn&eacute;es</h2>
+        <form id="formAddData">
+            <div id="formFields"></div>
+            <div class="modal-footer">
+                <button class="btn-cancel modal-close" type="button">Annuler</button>
+                <button class="btn-primary" type="submit">Ajouter</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL: Export -->
+<div class="modal-overlay" id="modalExport">
+    <div class="modal">
+        <h2>&#8615; Exporter vos donn&eacute;es</h2>
+        <div id="exportPreview"></div>
+        <button class="btn-primary" id="btnDownloadCSV">T&eacute;l&eacute;charger le CSV</button>
+        <div class="export-instructions">
+            <h3>Comment soumettre vos donn&eacute;es</h3>
+            <ol>
+                <li>T&eacute;l&eacute;chargez le fichier CSV ci-dessus</li>
+                <li>Envoyez-le par email (adresse dans la section Contribuer)</li>
+                <li>Pr&eacute;cisez votre nom et la source des donn&eacute;es</li>
+            </ol>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel modal-close">Fermer</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: Contribute -->
+<div class="modal-overlay" id="modalContribute">
+    <div class="modal">
+        <h2>&#8853; Contribuer au projet</h2>
+        <p>Vos donn&eacute;es seront t&eacute;l&eacute;charg&eacute;es en CSV pour envoi aux responsables du projet.</p>
+        <input type="text" placeholder="Votre nom / institution" id="contribName">
+        <input type="email" placeholder="Email de contact" id="contribEmail">
+        <div style="font-size:0.63rem;color:var(--muted);margin:8px 0">&#9873; <span id="userDataSummary">Aucune donn&eacute;e utilisateur charg&eacute;e</span></div>
+        <div class="modal-footer">
+            <button class="btn-cancel modal-close">Annuler</button>
+            <button class="btn-primary" id="btnSubmit">T&eacute;l&eacute;charger &amp; Envoyer</button>
+        </div>
+    </div>
+</div>
+
+<!-- Single module entry point -->
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
