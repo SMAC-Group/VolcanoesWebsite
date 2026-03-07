@@ -59,6 +59,7 @@ static-backend.js  (fetch + parse)
       +---> chart3d.js     (3D rendering)
       +---> detail-panel.js (right panel)
       +---> modals.js      (import/export)
+      +---> tutorial.js    (guided onboarding)
 
 localStorage
       |

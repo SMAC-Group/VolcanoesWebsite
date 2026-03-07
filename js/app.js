@@ -11,6 +11,7 @@ import * as Chart3D from './ui/chart3d.js';
 import * as DetailPanel from './ui/detail-panel.js';
 import * as Modals from './ui/modals.js';
 import * as Correction from './ui/correction.js';
+import * as Tutorial from './ui/tutorial.js';
 
 let currentView = '2d';
 let showEllipses = true;
@@ -164,6 +165,10 @@ async function init() {
     });
 
     _initResize();
+
+    // Tutorial
+    Tutorial.init();
+    document.getElementById('btnTutorial')?.addEventListener('click', () => Tutorial.start());
 
     Events.emit(EVT.DATA_LOADED);
 }

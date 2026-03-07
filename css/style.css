@@ -303,6 +303,63 @@ select.axis-pick:focus { border-color: var(--accent); }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
+/* === Tutorial overlay === */
+.tutorial-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.65); z-index: 500;
+}
+.tutorial-overlay.tutorial-active { display: block; }
+
+.tutorial-spotlight {
+    position: fixed; border-radius: 6px;
+    box-shadow: 0 0 0 9999px rgba(0,0,0,0.65);
+    z-index: 501; pointer-events: none;
+    transition: all 0.3s ease;
+    border: 2px solid var(--accent);
+}
+
+.tutorial-tooltip {
+    position: fixed; z-index: 502;
+    background: var(--bg2); border: 1px solid var(--accent);
+    border-radius: 8px; padding: 18px 22px;
+    width: 320px; max-width: 90vw;
+    display: flex; flex-direction: column; gap: 10px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+.tut-title {
+    font-family: var(--font-head); font-weight: 600;
+    font-size: 0.95rem; color: var(--accent2);
+}
+.tut-text { font-size: 0.72rem; color: var(--text); line-height: 1.6; }
+.tut-footer {
+    display: flex; align-items: center;
+    justify-content: space-between; margin-top: 4px;
+}
+.tut-counter { font-size: 0.6rem; color: var(--muted); }
+.tut-buttons { display: flex; gap: 6px; }
+.tut-buttons button {
+    background: var(--bg3); border: 1px solid var(--border); color: var(--muted);
+    padding: 5px 14px; font-family: var(--font-mono); font-size: 0.65rem;
+    cursor: pointer; border-radius: 4px; transition: all 0.15s;
+}
+.tut-buttons button:hover { border-color: var(--text); color: var(--text); }
+.tut-buttons .tut-next {
+    background: var(--accent); border-color: var(--accent); color: white;
+}
+.tut-buttons .tut-next:hover { opacity: 0.85; }
+.tut-buttons .tut-skip { opacity: 0.6; }
+.tut-buttons .tut-skip:hover { opacity: 1; }
+
+/* Tutorial help button */
+.btn-help {
+    background: var(--bg3); border: 1px solid var(--border); color: var(--muted);
+    width: 28px; height: 28px; border-radius: 50%;
+    font-family: var(--font-head); font-weight: 800; font-size: 0.85rem;
+    cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
+}
+.btn-help:hover { border-color: var(--accent); color: var(--accent); }
+
 /* === Responsive === */
 @media (max-width: 900px) {
     .layout { grid-template-columns: 1fr !important; grid-template-rows: auto 1fr auto; }

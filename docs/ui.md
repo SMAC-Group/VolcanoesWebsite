@@ -165,3 +165,32 @@ Data correction engine: drag user points on the 2D chart to adjust their positio
 - Chart re-render during correction mode: `reattach()` re-binds mouse handlers, `patchRows()` ensures corrected positions are preserved
 
 **Events emitted**: `EVT.CORRECTION_MODE_CHANGED`, `EVT.POINT_CORRECTED`
+
+---
+
+## `js/ui/tutorial.js`
+
+Guided step-by-step tutorial overlay for onboarding new users.
+
+**Auto-show**: on first visit (no `volcaninfos_tutorial_done` key in `localStorage`). After completion or skip, the key is set and the tutorial won't auto-show again.
+
+**Re-trigger**: the "?" button (`#btnTutorial`) in the header calls `Tutorial.start()` at any time.
+
+**UI structure**:
+- **Overlay** (`.tutorial-overlay`): semi-transparent black background, z-index 500
+- **Spotlight** (`.tutorial-spotlight`): positioned over the target element with a `box-shadow` cutout and orange border. Transitions smoothly between steps
+- **Tooltip** (`.tutorial-tooltip`): positioned relative to the spotlight (right/left/top/bottom), clamped to viewport. Contains title, text, step counter, and 3 buttons (Skip, Back, Next)
+
+**Steps** (10 total):
+1. Welcome (centered, no highlight)
+2. Chart axes (`.axis-selector`)
+3. Color grouping (`.color-row`)
+4. Volcano filter (`#volcanoList`)
+5. 2D/3D views (`.view-toggle`)
+6. Chart tools (`.plot-toolbar`)
+7. Correction mode (`#tb-correct`)
+8. Selection & details (`#selectionPanels`)
+9. Import & Export (`.header-right`)
+10. Conclusion (`#btnTutorial`)
+
+**Navigation**: Skip quits immediately. Back goes to previous step. Next advances. Clicking the overlay background also quits. On the last step, Next becomes "Finish"

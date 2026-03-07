@@ -8,7 +8,7 @@
 
 Application entry point. Defines the 3-column layout:
 
-- **Header**: logo, 2D/3D toggle, action buttons (Import, Add, Manage, Export, Contribute, Reset layout)
+- **Header**: logo, 2D/3D toggle, action buttons (Import, Add, Manage, Export, Contribute, Reset layout, Tutorial "?")
 - **Left panel** (`panel-left`): X/Y/Z axis selectors, color selector, "Invert Y" checkbox, volcano filter with search
 - **Resize handles** (`resize-handle`): draggable dividers between panels (col-resize cursor)
 - **Main area** (`main-area`): toolbar (lasso, rectangle, pan, reset, ellipses, labels) + `#plotDiv` (Plotly container)
@@ -36,6 +36,8 @@ Single stylesheet. Dark theme based on CSS variables (`:root`).
 - Modals (overlay + content)
 - Drag & drop upload zone
 - Preview table
+- Tutorial overlay (spotlight, tooltip, step navigation)
+- Tutorial help button (circular "?")
 - Responsive: below 900px, switches to single column
 
 ---
@@ -136,6 +138,21 @@ Correction mode engine: allows dragging user points on the 2D chart to adjust th
 **Exports**: `enter(axes)`, `exit()`, `isActive()`, `reattach()`, `setAxes(axes)`, `undo()`, `redo()`, `getCorrections()`, `getCorrectionForIndex(idx)`, `clearAll()`, `applyToUserData()`, `patchRows(rows)`
 
 See [ui.md](ui.md) for full documentation.
+
+---
+
+## `js/ui/tutorial.js`
+
+Guided tutorial overlay. Shows a step-by-step tour of the interface on first visit.
+
+**Exports**: `init()`, `start()`
+
+- `init()` — creates the DOM elements (overlay, spotlight, tooltip) and auto-starts on first visit (checks `localStorage` key `volcaninfos_tutorial_done`)
+- `start()` — resets to step 0 and shows the tutorial (used by the "?" button)
+
+**Steps**: 10 steps covering axes, color, filters, views, toolbar, correction, selection, import/export. Each step has a `selector` (CSS selector to highlight), `title`, `text`, and `position` (tooltip placement).
+
+**Navigation**: Next, Back, Skip buttons at each step. Clicking the overlay background also quits. Completion or skip sets `localStorage` key to prevent auto-showing again.
 
 ---
 
