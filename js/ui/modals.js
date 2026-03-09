@@ -2,11 +2,13 @@
 
 import { parse, validate, stringify } from '../csv.js';
 import * as API from '../services/api.js';
+import * as Columns from '../columns.js';
 import { CONFIG } from '../config.js';
 import { Events, EVT } from '../events.js';
 import { toast } from './toast.js';
 
 let _pendingUpload = null;
+let _columnMapping = {}; // { csvHeader → appColumn | null }
 
 export function init() {
     // Close on X or backdrop click
@@ -85,11 +87,17 @@ function _initUpload() {
 
     document.getElementById('btnConfirmUpload')?.addEventListener('click', () => {
         if (_pendingUpload) {
-            API.appendUserData(_pendingUpload.rows);
+            const mappedRows = _applyMapping(_pendingUpload.headers, _pendingUpload.rows);
+            API.appendUserData(mappedRows);
             _pendingUpload = null;
+            _columnMapping = {};
             document.getElementById('modalUpload')?.classList.remove('open');
             Events.emit(EVT.DATA_UPDATED);
         }
+    });
+
+    document.getElementById('btnResetMapping')?.addEventListener('click', () => {
+        if (_pendingUpload) _buildColumnMapping(_pendingUpload.headers);
     });
 }
 
@@ -111,6 +119,7 @@ function _handleFile(file) {
         }
 
         _showUploadPreview(headers, rows);
+        _buildColumnMapping(headers);
         _pendingUpload = { headers, rows };
     };
     reader.readAsText(file);
@@ -138,6 +147,70 @@ function _showUploadPreview(headers, rows) {
     html += '</tbody></table>';
     container.innerHTML = html;
     document.getElementById('uploadPreview')?.classList.remove('hidden');
+}
+
+function _buildColumnMapping(csvHeaders) {
+    const container = document.getElementById('columnMappingContainer');
+    if (!container) return;
+
+    // All known app columns (from columns.js + any already in the base data)
+    const appColumns = API.getAllHeaders().filter(h => !h.startsWith('_'));
+
+    // Auto-detect: if csvHeader matches an app column, map it; otherwise ignore
+    _columnMapping = {};
+    csvHeaders.forEach(h => {
+        _columnMapping[h] = appColumns.includes(h) ? h : null;
+    });
+
+    _renderColumnMapping(csvHeaders, appColumns);
+}
+
+function _renderColumnMapping(csvHeaders, appColumns) {
+    const container = document.getElementById('columnMappingContainer');
+    if (!container) return;
+
+    let html = '<div class="column-mapping">';
+    csvHeaders.forEach(h => {
+        const current = _columnMapping[h];
+        html += `<div class="map-from">${h}</div>`;
+        html += `<div class="map-arrow">&rarr;</div>`;
+        html += `<select class="map-to${current === null ? ' map-ignored' : ''}" data-csv="${h}">`;
+        html += `<option value=""${current === null ? ' selected' : ''}>— ignore —</option>`;
+        appColumns.forEach(col => {
+            const label = Columns.label(col);
+            const displayLabel = label !== col ? `${col} (${label})` : col;
+            html += `<option value="${col}"${current === col ? ' selected' : ''}>${displayLabel}</option>`;
+        });
+        // Allow keeping original name (custom column)
+        if (current === null && !appColumns.includes(h)) {
+            html += `<option value="${h}">${h} (new)</option>`;
+        } else if (!appColumns.includes(h)) {
+            html += `<option value="${h}"${current === h ? ' selected' : ''}>${h} (new)</option>`;
+        }
+        html += `</select>`;
+    });
+    html += '</div>';
+    container.innerHTML = html;
+
+    // Wire change events
+    container.querySelectorAll('select.map-to').forEach(sel => {
+        sel.addEventListener('change', () => {
+            const csvCol = sel.dataset.csv;
+            _columnMapping[csvCol] = sel.value || null;
+            sel.classList.toggle('map-ignored', !sel.value);
+        });
+    });
+}
+
+function _applyMapping(csvHeaders, rows) {
+    return rows.map(row => {
+        const mapped = {};
+        csvHeaders.forEach(h => {
+            const target = _columnMapping[h];
+            if (target) mapped[target] = row[h];
+        });
+        return mapped;
+    });
 }
 
 // --- Manual entry ---
