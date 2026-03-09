@@ -212,12 +212,15 @@ function renderChart() {
         rows = Correction.patchRows(rows);
     }
 
+    document.body.classList.add('loading');
+
     if (currentView === '3d') {
         _showChartSpinner();
         // Defer render so the browser paints the spinner first
         setTimeout(() => {
             Chart3D.render(rows, axes.x, axes.y, axes.z, axes.color, { showLabels, colorMap: _colorMap });
             _hideChartSpinner();
+            document.body.classList.remove('loading');
         }, 20);
     } else {
         Chart2D.render(rows, axes.x, axes.y, axes.color, {
@@ -227,6 +230,7 @@ function renderChart() {
             colorMap: _colorMap,
         });
         if (Correction.isActive()) Correction.reattach();
+        document.body.classList.remove('loading');
     }
 }
 
