@@ -16,7 +16,7 @@ Application entry point. Defines the 3-column layout:
 
 Panels are resizable by dragging the handles. Min/max constraints: left 180–400px, right 200–450px.
 
-Also contains 5 modals (overlays): CSV upload, manual entry, manage user data, export, contribution.
+Also contains 5 modals (overlays): CSV upload (with column mapping), manual entry, manage user data, export, contribution.
 
 Contains a loading overlay (`#loadingOverlay`) shown during initial data fetch, hidden after first render.
 
@@ -40,9 +40,12 @@ Single stylesheet. Dark theme based on CSS variables (`:root`).
 - Preview table
 - Tutorial overlay (spotlight, tooltip, step navigation)
 - Tutorial help button (circular "?")
+- Cache warning banner (dismissible with close button)
 - Toast notifications (fixed bottom-right, 4 types, auto-dismiss)
 - Loading spinner overlay (full-screen, CSS animation)
+- Column mapping grid (for CSV import)
 - Responsive: 900px breakpoint (single column, header/toolbar wrap) + 480px breakpoint (smaller fonts, full-screen modals)
+- Header and toolbar both use `flex-wrap` to adapt to available width
 
 ---
 

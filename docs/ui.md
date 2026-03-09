@@ -108,7 +108,8 @@ Manages the 5 application modals.
 - Drag & drop zone + click to browse
 - Parses the file with `csv.js`, shows a preview (first 10 rows)
 - Displays validation errors/warnings
-- "Confirm" button → `API.appendUserData()` + emits `EVT.DATA_UPDATED`
+- **Column mapping**: each CSV column has a dropdown to map it to an app column, ignore it, or keep it as a new column. Auto-detects matching names. "Reset mapping" button restores auto-detected mapping
+- "Confirm" button applies the column mapping, then calls `API.appendUserData()` + emits `EVT.DATA_UPDATED`
 
 ### Manual Entry (`modalAdd`)
 - Dynamically generates form fields from CSV headers

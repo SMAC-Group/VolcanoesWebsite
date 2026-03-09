@@ -134,7 +134,7 @@ select.axis-pick:focus { border-color: var(--accent); }
 .volcano-list label { display: flex; align-items: center; gap: 6px; font-size: 0.65rem; color: var(--muted); cursor: pointer; }
 
 /* === Main chart area === */
-.main-area { display: flex; flex-direction: column; overflow: hidden; }
+.main-area { display: flex; flex-direction: column; overflow: hidden; position: relative; }
 
 .plot-toolbar {
     display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
@@ -401,6 +401,13 @@ select.axis-pick:focus { border-color: var(--accent); }
 }
 .loading-text { font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* Chart-level spinner (3D loading) */
+.chart-spinner {
+    position: absolute; inset: 0; z-index: 10;
+    background: var(--bg-plot, #0d1017); display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 12px;
+}
 
 /* === Responsive === */
 @media (max-width: 900px) {

@@ -212,7 +212,12 @@ function renderChart() {
     }
 
     if (currentView === '3d') {
-        Chart3D.render(rows, axes.x, axes.y, axes.z, axes.color, { showLabels, colorMap: _colorMap });
+        _showChartSpinner();
+        // Defer render so the browser paints the spinner first
+        setTimeout(() => {
+            Chart3D.render(rows, axes.x, axes.y, axes.z, axes.color, { showLabels, colorMap: _colorMap });
+            _hideChartSpinner();
+        }, 20);
     } else {
         Chart2D.render(rows, axes.x, axes.y, axes.color, {
             invertY: axes.invertY,
@@ -222,6 +227,26 @@ function renderChart() {
         });
         if (Correction.isActive()) Correction.reattach();
     }
+}
+
+function _showChartSpinner() {
+    const plotDiv = document.getElementById('plotDiv');
+    if (!plotDiv) return;
+    Plotly.purge(plotDiv);
+    let spinner = document.getElementById('chartSpinner');
+    if (!spinner) {
+        spinner = document.createElement('div');
+        spinner.id = 'chartSpinner';
+        spinner.className = 'chart-spinner';
+        spinner.innerHTML = '<div class="spinner"></div><div class="loading-text">Loading 3D view...</div>';
+        plotDiv.parentElement.appendChild(spinner);
+    }
+    spinner.style.display = '';
+}
+
+function _hideChartSpinner() {
+    const spinner = document.getElementById('chartSpinner');
+    if (spinner) spinner.style.display = 'none';
 }
 
 function _getFilteredRows() {

@@ -45,7 +45,8 @@ Two options:
 1. Click **Import CSV** in the header
 2. Drag & drop your file or click to browse
 3. Review the preview table and check for warnings/errors
-4. Click **Confirm import**
+4. Check the **Column mapping** section — each CSV column is mapped to an app column automatically. If your column names differ, use the dropdowns to adjust. Columns set to "— ignore —" won't be imported. Click **Reset mapping** to restore auto-detected mappings
+5. Click **Confirm import**
 
 ### Option B: Manual entry
 1. Click **Add** in the header
