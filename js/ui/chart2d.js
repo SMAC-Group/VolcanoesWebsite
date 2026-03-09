@@ -229,8 +229,12 @@ function _tooltip(row) {
     const keys = [...Columns.metaKeys(), ...Columns.tooltipKeys()];
     return keys
         .filter(k => row[k] !== null && row[k] !== undefined)
-        .map(k => `${Columns.label(k)}: ${row[k]}`)
+        .map(k => `${Columns.label(k)}: ${_fmt(row[k])}`)
         .join('<br>');
+}
+
+function _fmt(val) {
+    return typeof val === 'number' ? parseFloat(val.toFixed(2)) : val;
 }
 
 function _hexToRgba(hex, a) {

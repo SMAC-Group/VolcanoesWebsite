@@ -45,7 +45,7 @@ export function render(rows, xCol, yCol, zCol, colorCol, { showLabels = false, c
                 size: 4,
                 color: basePts.map(p => colorMap[p[colorCol] ?? 'N/A']),
             },
-            hovertemplate: `%{customdata}<br>${Columns.label(xCol)}=%{x}<br>${Columns.label(yCol)}=%{y}<br>${Columns.label(zCol)}=%{z}<extra></extra>`,
+            hovertemplate: `%{customdata}<br>${Columns.label(xCol)}=%{x:.2f}<br>${Columns.label(yCol)}=%{y:.2f}<br>${Columns.label(zCol)}=%{z:.2f}<extra></extra>`,
         });
     }
 
@@ -61,7 +61,7 @@ export function render(rows, xCol, yCol, zCol, colorCol, { showLabels = false, c
             mode: 'markers',
             type: 'scatter3d',
             marker: { size: 6, color: t.userColor },
-            hovertemplate: `Your data<br>${Columns.label(xCol)}=%{x}<br>${Columns.label(yCol)}=%{y}<br>${Columns.label(zCol)}=%{z}<extra></extra>`,
+            hovertemplate: `Your data<br>${Columns.label(xCol)}=%{x:.2f}<br>${Columns.label(yCol)}=%{y:.2f}<br>${Columns.label(zCol)}=%{z:.2f}<extra></extra>`,
         });
     }
 

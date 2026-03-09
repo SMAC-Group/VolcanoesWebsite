@@ -128,7 +128,8 @@ function _showDetail(row, showBack) {
 
     detailKeys.forEach(h => {
         const val = row[h];
-        html += `<div class="prop"><span class="key">${Columns.label(h)}</span><span class="val">${val ?? '—'}</span></div>`;
+        const display = val == null ? '—' : (typeof val === 'number' ? parseFloat(val.toFixed(2)) : val);
+        html += `<div class="prop"><span class="key">${Columns.label(h)}</span><span class="val">${display}</span></div>`;
     });
 
     html += `</div>`;
