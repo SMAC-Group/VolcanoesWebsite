@@ -4,6 +4,7 @@ import { parse, validate, stringify } from '../csv.js';
 import * as API from '../services/api.js';
 import { CONFIG } from '../config.js';
 import { Events, EVT } from '../events.js';
+import { toast } from './toast.js';
 
 let _pendingUpload = null;
 
@@ -41,7 +42,7 @@ export function openManage() {
 export function openExport() {
     const userRows = API.getUserData();
     if (userRows.length === 0) {
-        alert('No user data to export.');
+        toast('No user data to export.', 'warning');
         return;
     }
     const headers = API.getAllHeaders().filter(h => !h.startsWith('_'));
@@ -94,7 +95,7 @@ function _initUpload() {
 
 function _handleFile(file) {
     if (!file.name.endsWith('.csv')) {
-        alert('Please select a .csv file');
+        toast('Please select a .csv file', 'warning');
         return;
     }
     const reader = new FileReader();
@@ -182,12 +183,12 @@ function _initExport() {
     document.getElementById('btnSubmit')?.addEventListener('click', () => {
         const name = document.getElementById('contribName')?.value || '';
         const email = document.getElementById('contribEmail')?.value || '';
-        if (!email) { alert('Email required.'); return; }
+        if (!email) { toast('Email required.', 'warning'); return; }
 
         const headers = API.getAllHeaders().filter(h => !h.startsWith('_'));
         const result = API.submitContribution(headers, { name, email });
         _downloadFile('contribution_volcaninfos.csv', result.csv);
-        alert(`CSV downloaded (${result.rowCount} rows). Send it to ${CONFIG.contactEmail}`);
+        toast(`CSV downloaded (${result.rowCount} rows). Send it to ${CONFIG.contactEmail}`, 'success');
         document.getElementById('modalContribute')?.classList.remove('open');
     });
 }

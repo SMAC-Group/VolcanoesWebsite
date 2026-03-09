@@ -156,6 +156,19 @@ Guided tutorial overlay. Shows a step-by-step tour of the interface on first vis
 
 ---
 
+## `js/ui/toast.js`
+
+Toast notification system. Replaces browser `alert()` calls with styled, auto-dismissing notifications.
+
+**`toast(message, type)`** — displays a toast. Types: `'info'` (blue), `'success'` (green), `'warning'` (gold), `'error'` (red).
+
+- Creates a `#toastContainer` (fixed, bottom-right, z-index 300) on first call
+- Each toast auto-dismisses after 4 seconds with a fade-out animation
+- Close button (×) for manual dismissal
+- Stacks multiple toasts vertically (newest at bottom)
+
+---
+
 ## Service files → see [services.md](services.md)
 
 ## UI files → see [ui.md](ui.md)

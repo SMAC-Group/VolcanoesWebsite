@@ -2,6 +2,7 @@
 // This file is swapped out entirely when switching to a remote backend.
 
 import { parse, stringify } from '../csv.js';
+import { Events, EVT } from '../events.js';
 
 const STORAGE_KEY = 'volcaninfos_user_data';
 
@@ -19,6 +20,7 @@ export async function fetchVolcanoes(url = 'data/volcanoData.csv') {
         return result;
     } catch (err) {
         console.warn('Could not load base data:', err.message);
+        Events.emit(EVT.FETCH_ERROR, err.message);
         _baseRows = [];
         _baseHeaders = [];
         return { headers: [], rows: [] };

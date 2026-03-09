@@ -12,6 +12,7 @@ import * as DetailPanel from './ui/detail-panel.js';
 import * as Modals from './ui/modals.js';
 import * as Correction from './ui/correction.js';
 import * as Tutorial from './ui/tutorial.js';
+import { toast } from './ui/toast.js';
 
 let currentView = '2d';
 let showEllipses = true;
@@ -31,6 +32,13 @@ async function init() {
 
     // Initial render
     renderChart();
+
+    // Hide loading overlay
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) {
+        overlay.classList.add('hidden');
+        setTimeout(() => overlay.remove(), 300);
+    }
 
     // --- Wire events ---
 
@@ -138,6 +146,7 @@ async function init() {
     });
 
     Events.on(EVT.FILTER_CHANGED, () => renderChart());
+    Events.on(EVT.FETCH_ERROR, (msg) => toast('Could not load base data: ' + msg, 'error'));
 
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {

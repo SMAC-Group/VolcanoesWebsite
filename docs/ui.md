@@ -194,3 +194,17 @@ Guided step-by-step tutorial overlay for onboarding new users.
 10. Conclusion (`#btnTutorial`)
 
 **Navigation**: Skip quits immediately. Back goes to previous step. Next advances. Clicking the overlay background also quits. On the last step, Next becomes "Finish"
+
+---
+
+## Toast Notifications (`js/ui/toast.js`)
+
+Styled notification system replacing browser `alert()`. Toasts appear at the bottom-right corner and auto-dismiss after 4 seconds. Four types: `info` (blue), `success` (green), `warning` (gold), `error` (red).
+
+Used in `modals.js` (validation warnings, export success) and `app.js` (fetch errors via `EVT.FETCH_ERROR`).
+
+---
+
+## Loading Spinner
+
+A full-screen overlay (`#loadingOverlay`) shown while the base CSV data loads. Pure CSS animation (rotating circle). Hidden after `fetchVolcanoes()` + first `renderChart()` complete, then removed from the DOM after the fade-out transition.

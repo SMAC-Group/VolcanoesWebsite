@@ -29,4 +29,5 @@ export const EVT = {
     POINT_CLICKED: 'point:clicked',
     CORRECTION_MODE_CHANGED: 'correction:modeChanged',
     POINT_CORRECTED: 'correction:pointCorrected',
+    FETCH_ERROR: 'data:fetchError',
 };
