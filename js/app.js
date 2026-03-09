@@ -66,6 +66,7 @@ async function init() {
     document.getElementById('tb-select')?.addEventListener('click', () => setTool('select'));
     document.getElementById('tb-pan')?.addEventListener('click', () => setTool('pan'));
     document.getElementById('tb-reset')?.addEventListener('click', resetView);
+    document.getElementById('tb-reset3d')?.addEventListener('click', resetView);
     document.getElementById('tb-ellipses')?.addEventListener('click', toggleEllipses);
     document.getElementById('tb-labels')?.addEventListener('click', toggleLabels);
     document.getElementById('tb-labels3d')?.addEventListener('click', toggleLabels);

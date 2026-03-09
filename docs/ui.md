@@ -212,4 +212,6 @@ Used in `modals.js` (validation warnings, export success) and `app.js` (fetch er
 
 ## Loading Spinner
 
-A full-screen overlay (`#loadingOverlay`) shown while the base CSV data loads. Pure CSS animation (rotating circle). Hidden after `fetchVolcanoes()` + first `renderChart()` complete, then removed from the DOM after the fade-out transition.
+**Initial loading**: A full-screen overlay (`#loadingOverlay`) shown while the base CSV data loads. Pure CSS animation (rotating circle). Hidden after `fetchVolcanoes()` + first `renderChart()` complete, then removed from the DOM after the fade-out transition.
+
+**3D view loading**: When switching to 3D, the 2D chart is purged and a spinner (`#chartSpinner`) is shown inside the chart area while Plotly builds the WebGL context. Managed by `_showChartSpinner()` / `_hideChartSpinner()` in `app.js`.
