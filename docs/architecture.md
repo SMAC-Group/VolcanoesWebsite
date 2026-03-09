@@ -30,6 +30,10 @@ Modules communicate via an event bus (`js/events.js`) instead of calling each ot
 | `VIEW_CHANGED` | 2D/3D toggle | `'2d'` or `'3d'` |
 | `FILTER_CHANGED` | Volcano checkbox toggled | none |
 | `AXES_CHANGED` | X/Y/Z/color axis changed | none |
+| `POINT_CLICKED` | Click on a chart point | `{ index, ctrlKey }` |
+| `CORRECTION_MODE_CHANGED` | Correction mode toggled | `{ active }` |
+| `POINT_CORRECTED` | User point dragged/edited | correction data |
+| `FETCH_ERROR` | Base CSV fetch failed | error message string |
 
 ### 2. Service Layer (backend abstraction)
 
@@ -59,6 +63,7 @@ static-backend.js  (fetch + parse)
       +---> chart3d.js     (3D rendering)
       +---> detail-panel.js (right panel)
       +---> modals.js      (import/export)
+      +---> toast.js       (notifications)
       +---> tutorial.js    (guided onboarding)
 
 localStorage

@@ -33,6 +33,7 @@ Reference,T_C,P_kbar,n_cpx,SiO2_Cpx,TiO2_Cpx,...
 - Empty CSV cells become `null` after parsing
 - Points with `null` on an active axis are **filtered from the chart** (not removed from the dataset)
 - `null` values are displayed as `—` in the detail panel
+- Numeric values are formatted to 2 decimal places in tooltips and detail panel (trailing zeros removed)
 
 ## Type Coercion
 

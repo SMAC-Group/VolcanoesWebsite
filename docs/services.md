@@ -47,7 +47,7 @@ Facade that delegates to the active backend based on `CONFIG.backend`.
 Static implementation: loads CSV via `fetch()`, stores user data in `localStorage`.
 
 **How it works**:
-1. `fetchVolcanoes()` calls `fetch('data/volcanoData.csv')`, parses the CSV, stores rows in memory
+1. `fetchVolcanoes()` calls `fetch('data/volcanoData.csv')`, parses the CSV, stores rows in memory. On failure, emits `EVT.FETCH_ERROR` with the error message (displayed as toast by `app.js`)
 2. User data is serialized as JSON in `localStorage` under the key `volcaninfos_user_data`
 3. `submitContribution()` generates a CSV and returns it (no server call — the file is downloaded client-side)
 

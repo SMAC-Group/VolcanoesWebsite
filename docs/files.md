@@ -18,6 +18,8 @@ Panels are resizable by dragging the handles. Min/max constraints: left 180–40
 
 Also contains 5 modals (overlays): CSV upload, manual entry, manage user data, export, contribution.
 
+Contains a loading overlay (`#loadingOverlay`) shown during initial data fetch, hidden after first render.
+
 Loads Plotly.js 2.27.0 via CDN and Google Fonts (Syne + Space Mono).
 
 ---
@@ -38,7 +40,9 @@ Single stylesheet. Dark theme based on CSS variables (`:root`).
 - Preview table
 - Tutorial overlay (spotlight, tooltip, step navigation)
 - Tutorial help button (circular "?")
-- Responsive: below 900px, switches to single column
+- Toast notifications (fixed bottom-right, 4 types, auto-dismiss)
+- Loading spinner overlay (full-screen, CSS animation)
+- Responsive: 900px breakpoint (single column, header/toolbar wrap) + 480px breakpoint (smaller fonts, full-screen modals)
 
 ---
 
@@ -64,7 +68,7 @@ Lightweight event bus (pub/sub). 3 methods:
 - `Events.off(event, fn)` — unsubscribe
 - `Events.emit(event, data)` — emit an event
 
-Also exports `EVT`: event name constants. See [architecture.md](architecture.md) for the full list.
+Also exports `EVT`: event name constants including `FETCH_ERROR` for data load failures. See [architecture.md](architecture.md) for the full list.
 
 ---
 
@@ -80,7 +84,9 @@ Main orchestrator. Imports all modules and wires up events.
 - `setTool(mode)`: changes Plotly interaction mode (`lasso`, `select`, `pan`)
 - `resetView()`: resets camera/axes to initial position
 - `toggleEllipses()` / `toggleLabels()`: toggles visual overlays
-- Keyboard shortcut: `Escape` to clear selection
+- Keyboard shortcuts: `Escape` to clear selection, `Ctrl+Z`/`Ctrl+Shift+Z` for undo/redo in correction mode
+- Hides loading spinner after initial data load
+- Listens for `EVT.FETCH_ERROR` to show error toast
 
 ---
 
@@ -166,6 +172,20 @@ Toast notification system. Replaces browser `alert()` calls with styled, auto-di
 - Each toast auto-dismisses after 4 seconds with a fade-out animation
 - Close button (×) for manual dismissal
 - Stacks multiple toasts vertically (newest at bottom)
+
+---
+
+## `netlify.toml`
+
+Netlify configuration. Routes all requests (`/*`) through the `basic-auth` edge function for password protection.
+
+---
+
+## `netlify/edge-functions/basic-auth.ts`
+
+Netlify edge function for HTTP Basic Auth. Imports a Deno module that checks the `BASIC_AUTH_CREDENTIALS` environment variable (set in Netlify dashboard, format: `user:password`). If the variable is not set, the function passes through without authentication.
+
+To remove password protection: delete `netlify.toml` and `netlify/edge-functions/`, or remove the environment variable in Netlify.
 
 ---
 

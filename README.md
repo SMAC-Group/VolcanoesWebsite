@@ -11,7 +11,10 @@ Static web application for visualizing volcanic geochemical data (Temperature, P
 - **Manage Data**: view and delete user-added points individually or all at once
 - **Data Correction**: drag user points on the 2D chart to correct positions, with undo/redo
 - **Export / Contribute**: CSV download + submission instructions
+- **Toast Notifications**: styled auto-dismissing notifications (replaces browser alerts)
+- **Loading Spinner**: full-screen overlay while base data loads
 - **Guided Tutorial**: step-by-step onboarding overlay on first visit, re-triggerable via "?" button
+- **Password Protection**: Netlify edge function with HTTP Basic Auth (WIP gate)
 
 ## Tech Stack
 
@@ -22,6 +25,7 @@ Static web application for visualizing volcanic geochemical data (Temperature, P
 | Fonts | Syne (headings) + Space Mono (monospace) via Google Fonts |
 | Local Storage | localStorage (user data) |
 | Data Format | CSV |
+| Hosting | [Netlify](https://www.netlify.com/) (edge functions for auth) |
 
 ## Quick Start
 
@@ -68,6 +72,9 @@ VolcanoWebsite/
 │       ├── modals.js           # Modals: upload, entry, manage, export, contribute
 │       └── tutorial.js         # Guided tutorial overlay (step-by-step onboarding)
 ├── data/volcanoData.csv        # Main database
+├── netlify.toml                # Netlify config (edge function routing)
+├── netlify/edge-functions/
+│   └── basic-auth.ts           # Password protection (HTTP Basic Auth)
 └── docs/                       # Detailed documentation (see links above)
 ```
 

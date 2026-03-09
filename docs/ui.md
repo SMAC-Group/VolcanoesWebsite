@@ -42,16 +42,18 @@ Left panel: axis selectors and volcano filter.
 4. If `showEllipses`: computes confidence ellipses (~1.9 sigma) per group (min 5 points) with semi-transparent fill
 5. If `showLabels`: adds the group name below each ellipse
 6. Wires `plotly_click` → emits `EVT.POINT_CLICKED` (shows detail) and `plotly_selected` → `Selection.selectMultiple()`
+7. All numeric values in tooltips are formatted to 2 decimal places via `_fmt()`
 
 **Layout**: dark theme, lasso dragmode by default, scrollZoom enabled, no visible modebar.
 
-**Middle-click pan**: a custom handler (`_attachMiddlePan`) enables panning with the middle mouse button regardless of the current dragmode. This keeps left-click for the active tool (lasso/rect/pan) while middle-click always pans. During middle-click drag, the Pan toolbar button is visually highlighted; on release, the highlight returns to the previously active tool (read from Plotly's `dragmode`). A hint label in the 2D toolbar reminds the user of this shortcut.
+**Middle-click pan**: a custom handler (`_attachMiddlePan`) enables panning with the middle mouse button regardless of the current dragmode. This keeps left-click for the active tool (lasso/rect/pan) while middle-click always pans. The middle-click event is intercepted in the capture phase with `stopImmediatePropagation()` to prevent Plotly from triggering a lasso/select. During middle-click drag, the Pan toolbar button is visually highlighted; on release, the highlight returns to the previously active tool (read from Plotly's `dragmode`). A hint label in the 2D toolbar reminds the user of this shortcut.
 
 **Internal functions**:
 - `_attachMiddlePan(el)` — wires mousedown/mousemove/mouseup for middle-button panning
 - `_setToolbarHighlight(mode, active)` — toggles toolbar button highlights during middle-click pan
 - `_groupBy(rows, col)` — groups rows by column value
 - `_tooltip(row)` — generates tooltip HTML (meta + main axes)
+- `_fmt(val)` — formats numeric values to 2 decimal places
 - `_hexToRgba(hex, a)` — converts hex color to rgba
 
 ---
@@ -67,7 +69,7 @@ Left panel: axis selectors and volcano filter.
 3. Computes **centroids** per group: average X/Y/Z position, displayed as open circles with labels
 4. Wires `plotly_click` → emits `EVT.POINT_CLICKED` (shows detail)
 
-No lasso/rectangle in 3D (Plotly limitation). Interaction is via orbit (drag), pan (Shift+drag), and zoom (scroll).
+No lasso/rectangle in 3D (Plotly limitation). Interaction is via orbit (drag), pan (Shift+drag), and zoom (scroll). Hover values are formatted to 2 decimal places via Plotly's `:.2f` format specifier.
 
 ---
 
@@ -85,7 +87,7 @@ Right panel: selection details and statistics.
 
 **`showPointDetailByIndex(index)`**
 - Looks up the row by index in `API.getAllRows()`
-- Displays a detail card for the point (Reference as title, "YOU" tag if user data, all configured columns)
+- Displays a detail card for the point (Reference as title, "YOU" tag if user data, all configured columns with numeric values formatted to 2 decimal places)
 - If a multi-selection is active, shows a "Back to selection" button that restores the empty detail view (the selection list remains visible below)
 
 **Interaction flow**:
@@ -121,7 +123,9 @@ Manages the 5 application modals.
 ### Contribution (`modalContribute`)
 - Name and email fields
 - Summary of user data in cache
-- "Download & Send" button: generates CSV, downloads it, shows contact email
+- "Download & Send" button: generates CSV, downloads it, shows toast with contact email
+
+All validation messages and success notifications use toast notifications (`js/ui/toast.js`) instead of browser `alert()` calls.
 
 ### Manage User Data (`modalManage`)
 - Lists all user-added points in a table (first 6 columns displayed)
