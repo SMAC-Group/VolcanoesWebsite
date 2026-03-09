@@ -9,6 +9,9 @@ export const CONFIG = {
     // Default axis selection (must match CSV column names)
     defaultAxes: { x: 'T_C', y: 'P_kbar', z: 'SiO2_Cpx' },
 
+    // Columns that auto-invert Y axis when selected (e.g. Pressure increases downward)
+    autoInvertY: ['P_kbar'],
+
     // Contact for data contributions
     contactEmail: 'contact@volcaninfos.fr',
 

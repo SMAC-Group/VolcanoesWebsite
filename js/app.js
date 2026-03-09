@@ -27,6 +27,13 @@ async function init() {
     Sidebar.initAxisSelectors();
     Sidebar.initVolcanoFilter();
     Modals.init();
+
+    // Auto-invert Y if default axis is in the autoInvertY list
+    const invertCb = document.getElementById('invertY');
+    const defaultY = document.getElementById('axisY')?.value;
+    if (invertCb && defaultY && CONFIG.autoInvertY.includes(defaultY)) {
+        invertCb.checked = true;
+    }
     _updateCacheWarning();
     _updateTotalCount();
 
@@ -46,6 +53,12 @@ async function init() {
     ['axisX', 'axisY', 'axisZ', 'colorSelect', 'invertY'].forEach(id => {
         document.getElementById(id)?.addEventListener('change', () => {
             if (id === 'colorSelect') _colorMap = null; // rebuild on color column change
+            // Auto-invert Y axis for pressure-like columns
+            if (id === 'axisY') {
+                const yVal = document.getElementById('axisY').value;
+                const invertCb = document.getElementById('invertY');
+                if (invertCb) invertCb.checked = CONFIG.autoInvertY.includes(yVal);
+            }
             Events.emit(EVT.AXES_CHANGED);
             renderChart();
             // Refresh stats if a selection is active
