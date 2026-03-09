@@ -274,6 +274,11 @@ function _hideChartSpinner() {
 
 function _getFilteredRows() {
     const all = API.getAllRows();
+
+    // Tag each row with its global index so chart click events
+    // map back to the correct row in getAllRows(), even after filtering.
+    all.forEach((r, i) => { r._idx = i; });
+
     const catCols = API.getCategoricalHeaders();
     const volcanoCol = catCols[0];
     if (!volcanoCol) return all;

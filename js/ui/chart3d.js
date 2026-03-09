@@ -46,7 +46,7 @@ export function render(rows, xCol, yCol, zCol, colorCol, { showLabels = false, c
     const t = CONFIG.theme;
 
     const valid = rows
-        .map((r, i) => ({ ...r, _idx: i }))
+        .map((r, i) => ({ ...r, _idx: r._idx ?? i }))
         .filter(r => r[xCol] !== null && r[yCol] !== null && r[zCol] !== null);
 
     // Use provided color map or build a local one

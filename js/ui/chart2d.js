@@ -27,7 +27,7 @@ export function render(rows, xCol, yCol, colorCol, { invertY = false, showEllips
 
     // Filter rows with valid values for both axes
     const valid = rows
-        .map((r, i) => ({ ...r, _idx: i }))
+        .map((r, i) => ({ ...r, _idx: r._idx ?? i }))
         .filter(r => r[xCol] !== null && r[yCol] !== null);
 
     // Use provided color map or build a local one
