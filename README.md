@@ -64,6 +64,7 @@ VolcanoWebsite/
 │       ├── chart3d.js          # 3D Plotly chart (scatter3d + centroids)
 │       ├── detail-panel.js     # Right panel: point detail, stats
 │       ├── correction.js       # Data correction: drag points, undo/redo
+│       ├── toast.js            # Toast notification system
 │       ├── modals.js           # Modals: upload, entry, manage, export, contribute
 │       └── tutorial.js         # Guided tutorial overlay (step-by-step onboarding)
 ├── data/volcanoData.csv        # Main database
