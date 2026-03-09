@@ -157,9 +157,11 @@ export function render(rows, xCol, yCol, colorCol, { invertY = false, showEllips
 function _attachMiddlePan(el) {
     const plotArea = el.querySelector('.draglayer') || el;
 
+    // Capture phase: intercept middle-click before Plotly starts a lasso/select
     plotArea.addEventListener('mousedown', (e) => {
         if (e.button !== 1) return; // middle button only
         e.preventDefault();
+        e.stopImmediatePropagation();
         const xaxis = el._fullLayout.xaxis;
         const yaxis = el._fullLayout.yaxis;
         _midPan = {
@@ -172,7 +174,7 @@ function _attachMiddlePan(el) {
         };
         // Highlight Pan button in toolbar
         _setToolbarHighlight('pan', true);
-    });
+    }, true);
 
     window.addEventListener('mousemove', (e) => {
         if (!_midPan) return;
