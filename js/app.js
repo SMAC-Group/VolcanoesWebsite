@@ -215,6 +215,11 @@ function renderChart() {
     document.body.classList.add('loading');
 
     if (currentView === '3d') {
+        if (!Chart3D.hasWebGL()) {
+            Chart3D.showNoWebGLWarning();
+            document.body.classList.remove('loading');
+            return;
+        }
         _showChartSpinner();
         // Defer render so the browser paints the spinner first
         setTimeout(() => {

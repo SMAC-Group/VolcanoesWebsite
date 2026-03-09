@@ -8,6 +8,40 @@ import { Events, EVT } from '../events.js';
 
 const CHART_ID = 'plotDiv';
 
+// Detect WebGL support (Brave shields may block it)
+const _hasWebGL = (() => {
+    try {
+        const c = document.createElement('canvas');
+        return !!(c.getContext('webgl') || c.getContext('experimental-webgl'));
+    } catch { return false; }
+})();
+
+export function hasWebGL() { return _hasWebGL; }
+
+export function showNoWebGLWarning() {
+    const el = document.getElementById(CHART_ID);
+    if (!el) return;
+    el.innerHTML = '';
+    const box = document.createElement('div');
+    box.className = 'webgl-warning';
+    box.innerHTML = `
+        <div class="webgl-warning-icon">&#9888;</div>
+        <h3>WebGL is not available</h3>
+        <p>The 3D view requires WebGL, which appears to be blocked or unavailable in your browser.</p>
+        <div class="webgl-warning-steps">
+            <h4>How to enable WebGL</h4>
+            <ul>
+                <li><strong>Brave:</strong> Click the Shields icon (lion) in the address bar &rarr; set <em>Block fingerprinting</em> to <strong>Off</strong> or <strong>Standard</strong>, then reload the page.</li>
+                <li><strong>Firefox:</strong> Go to <code>about:config</code> &rarr; search for <code>webgl.disabled</code> &rarr; set it to <strong>false</strong>.</li>
+                <li><strong>Chrome / Edge:</strong> Go to <code>chrome://flags</code> &rarr; search for <em>WebGL</em> &rarr; set to <strong>Enabled</strong>.</li>
+                <li><strong>General:</strong> Make sure your graphics drivers are up to date.</li>
+            </ul>
+        </div>
+        <p class="webgl-warning-note">The 2D view works without WebGL and is fully functional.</p>
+    `;
+    el.appendChild(box);
+}
+
 export function render(rows, xCol, yCol, zCol, colorCol, { showLabels = false, colorMap = null } = {}) {
     const t = CONFIG.theme;
 

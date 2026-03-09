@@ -410,6 +410,29 @@ select.axis-pick:focus { border-color: var(--accent); }
     align-items: center; justify-content: center; gap: 12px;
 }
 
+/* WebGL not available warning (3D view) */
+.webgl-warning {
+    position: absolute; inset: 0; z-index: 10;
+    background: var(--bg-plot, #0d1017);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 32px; text-align: center; color: var(--text);
+    font-family: var(--font-mono);
+}
+.webgl-warning-icon { font-size: 2.5rem; margin-bottom: 8px; color: #ffd700; }
+.webgl-warning h3 { font-family: var(--font-head); font-size: 1.1rem; margin: 0 0 12px; color: #ffd700; }
+.webgl-warning p { font-size: 0.75rem; color: var(--muted); margin: 0 0 16px; max-width: 480px; line-height: 1.6; }
+.webgl-warning-steps {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 6px;
+    padding: 16px 20px; text-align: left; max-width: 520px; width: 100%;
+}
+.webgl-warning-steps h4 { font-family: var(--font-head); font-size: 0.8rem; margin: 0 0 10px; color: var(--accent2); }
+.webgl-warning-steps ul { margin: 0; padding-left: 18px; font-size: 0.7rem; line-height: 1.9; color: var(--text); }
+.webgl-warning-steps li { margin-bottom: 4px; }
+.webgl-warning-steps code { background: var(--bg); padding: 1px 5px; border-radius: 3px; font-size: 0.67rem; color: var(--accent); }
+.webgl-warning-steps strong { color: var(--accent2); }
+.webgl-warning-steps em { color: var(--muted); font-style: normal; }
+.webgl-warning-note { font-size: 0.68rem; color: var(--teal); margin-top: 16px; }
+
 /* === Responsive === */
 @media (max-width: 900px) {
     .layout { grid-template-columns: 1fr !important; grid-template-rows: auto 1fr auto; }

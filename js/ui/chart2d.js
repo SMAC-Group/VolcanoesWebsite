@@ -10,7 +10,19 @@ const CHART_ID = 'plotDiv';
 let _bindingsAttached = false;
 let _midPan = null;
 
+// Detect WebGL support (Brave shields may block it)
+const _hasWebGL = (() => {
+    try {
+        const c = document.createElement('canvas');
+        return !!(c.getContext('webgl') || c.getContext('experimental-webgl'));
+    } catch { return false; }
+})();
+const SCATTER_TYPE = _hasWebGL ? 'scattergl' : 'scatter';
+
 export function render(rows, xCol, yCol, colorCol, { invertY = false, showEllipses = true, showLabels = false, colorMap = null } = {}) {
+    // Remove any WebGL warning overlay left by 3D view
+    document.getElementById(CHART_ID)?.querySelector('.webgl-warning')?.remove();
+
     const t = CONFIG.theme;
 
     // Filter rows with valid values for both axes
@@ -43,7 +55,7 @@ export function render(rows, xCol, yCol, colorCol, { invertY = false, showEllips
             name: 'Base data',
             legendrank: 1,
             mode: 'markers',
-            type: 'scattergl',
+            type: SCATTER_TYPE,
             marker: {
                 symbol: 'triangle-up',
                 size: 7,
@@ -64,7 +76,7 @@ export function render(rows, xCol, yCol, colorCol, { invertY = false, showEllips
             name: 'Your data',
             legendrank: 2,
             mode: 'markers',
-            type: 'scattergl',
+            type: SCATTER_TYPE,
             marker: {
                 symbol: 'circle',
                 size: 9,
