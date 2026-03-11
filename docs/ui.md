@@ -102,7 +102,7 @@ Right panel: selection details and statistics.
 
 ## `js/ui/modals.js`
 
-Manages the 5 application modals.
+Manages the 6 application modals (including the reference viewer).
 
 ### CSV Upload (`modalUpload`)
 - Drag & drop zone + click to browse
@@ -127,6 +127,21 @@ Manages the 5 application modals.
 - "Download & Send" button: generates CSV, downloads it, shows toast with contact email
 
 All validation messages and success notifications use toast notifications (`js/ui/toast.js`) instead of browser `alert()` calls.
+
+### Reference Viewer (`modalReference`)
+
+Displays detailed BibTeX metadata for a reference. Triggered by:
+- **Eye icon** (&#9737;) next to each reference name in the sidebar volcano filter list
+- **Clickable reference names** in the detail panel (right sidebar) when viewing a point's data
+
+The modal shows:
+- **Title** (prominent, styled heading)
+- **BibTeX fields**: Authors, Journal, Year, Volume, Pages, DOI (as clickable link), URL, Publisher, Abstract, Type
+- **"Copy citation"** button: copies a formatted citation string to the clipboard (Authors (Year). Title. Journal, Volume(Number), Pages. DOI URL)
+
+The reference data is loaded from `data/references.json` at startup (in parallel with the CSV data). The JSON file is built offline from `data/references.bib` using `scripts/build-references.mjs`.
+
+**Search integration**: The sidebar search box (`#filterSearch`) searches across all BibTeX fields (title, authors, journal, abstract, etc.) in addition to the reference name. Matching labels are highlighted with `<mark>` tags.
 
 ### Manage User Data (`modalManage`)
 - Lists all user-added points in a table (first 6 columns displayed)

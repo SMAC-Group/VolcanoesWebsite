@@ -3,6 +3,8 @@
 import * as API from '../services/api.js';
 import * as Columns from '../columns.js';
 import { CONFIG } from '../config.js';
+import { Events, EVT } from '../events.js';
+import * as Refs from '../references.js';
 
 // Keep track of the last selection so we can navigate back from detail view
 let _lastSelection = [];
@@ -83,7 +85,8 @@ function _renderSelectionList(sel) {
     const col1 = _currentAxes.x;
 
     selList.innerHTML = sel.slice(0, 50).map(d => {
-        const name = nameCol ? (d[nameCol] ?? '?') : `#${d._idx ?? ''}`;
+        const rawName = nameCol ? (d[nameCol] ?? '?') : `#${d._idx ?? ''}`;
+        const name = Refs.getShortLabel(rawName) || rawName;
         const ref = refCol && d[refCol] ? d[refCol] : '';
         const val = col1 && d[col1] !== null ? `${d[col1]}` : '';
         return `<div class="sel-item" data-idx="${d._idx}">
@@ -117,13 +120,24 @@ function _showDetail(row, showBack) {
         html += `<button class="btn-back" id="btnBackToList">&larr; Back to selection</button>`;
     }
     html += `<div class="volcano-card">`;
-    html += `<div class="name">${title}`;
+    const refData = titleKey ? Refs.getRef(row[titleKey]) : null;
+    if (refData && refData.title) {
+        const displayLabel = Refs.getDisplayLabel(row[titleKey]) || title;
+        html += `<div class="name"><a href="#" class="ref-link" data-ref="${row[titleKey]}" title="View reference">${displayLabel}</a>`;
+    } else {
+        html += `<div class="name">${title}`;
+    }
     if (isUser) html += ` <span class="user-tag">YOU</span>`;
     html += `</div>`;
 
     metaKeys.slice(1).forEach(h => {
         const val = row[h];
-        html += `<div class="prop"><span class="key">${Columns.label(h)}</span><span class="val">${val ?? '—'}</span></div>`;
+        if (h === 'Reference' && val) {
+            const displayLabel = Refs.getDisplayLabel(val) || val;
+            html += `<div class="prop"><span class="key">${Columns.label(h)}</span><span class="val"><a href="#" class="ref-link" data-ref="${val}" title="${displayLabel}">${displayLabel}</a></span></div>`;
+        } else {
+            html += `<div class="prop"><span class="key">${Columns.label(h)}</span><span class="val">${val ?? '—'}</span></div>`;
+        }
     });
 
     detailKeys.forEach(h => {
@@ -134,6 +148,14 @@ function _showDetail(row, showBack) {
 
     html += `</div>`;
     container.innerHTML = html;
+
+    // Wire ref links
+    container.querySelectorAll('.ref-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            Events.emit(EVT.REF_VIEW_REQUESTED, link.dataset.ref);
+        });
+    });
 
     // Wire back button
     if (showBack) {

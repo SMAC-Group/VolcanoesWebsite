@@ -4,6 +4,7 @@ import { CONFIG } from '../config.js';
 import * as API from '../services/api.js';
 import * as Columns from '../columns.js';
 import { Events, EVT } from '../events.js';
+import * as Refs from '../references.js';
 
 export function initAxisSelectors() {
     const numCols = API.getNumericHeaders();
@@ -44,7 +45,25 @@ export function initVolcanoFilter() {
         cb.dataset.volcano = name;
         cb.addEventListener('change', () => Events.emit(EVT.FILTER_CHANGED));
         label.appendChild(cb);
-        label.appendChild(document.createTextNode(` ${name}`));
+
+        const displayLabel = Refs.getDisplayLabel(name) || name;
+        const labelSpan = document.createElement('span');
+        labelSpan.className = 'ref-label-text';
+        labelSpan.textContent = ` ${displayLabel}`;
+        labelSpan.title = displayLabel;
+        label.appendChild(labelSpan);
+
+        const eyeBtn = document.createElement('button');
+        eyeBtn.className = 'btn-ref-eye';
+        eyeBtn.innerHTML = '&#9737;';
+        eyeBtn.title = 'View reference details';
+        eyeBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            Events.emit(EVT.REF_VIEW_REQUESTED, name);
+        });
+        label.appendChild(eyeBtn);
+
         list.appendChild(label);
     });
 }

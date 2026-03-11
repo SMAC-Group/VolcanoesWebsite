@@ -13,6 +13,7 @@ import * as Modals from './ui/modals.js';
 import * as Correction from './ui/correction.js';
 import * as Tutorial from './ui/tutorial.js';
 import { toast } from './ui/toast.js';
+import * as Refs from './references.js';
 
 let currentView = '2d';
 let showEllipses = true;
@@ -20,8 +21,8 @@ let showLabels = false;
 let _colorMap = null;
 
 async function init() {
-    // Load base data
-    await API.fetchVolcanoes();
+    // Load base data and references in parallel
+    await Promise.all([API.fetchVolcanoes(), Refs.fetchReferences()]);
 
     // Init UI
     Sidebar.initAxisSelectors();
@@ -110,11 +111,40 @@ async function init() {
     document.getElementById('btnExport')?.addEventListener('click', () => Modals.openExport());
     document.getElementById('btnAddManual')?.addEventListener('click', () => Modals.openManualEntry());
 
-    // Sidebar filter — filters checkbox list + chart points
+    // Reference viewer
+    Events.on(EVT.REF_VIEW_REQUESTED, (csvKey) => Modals.openReference(csvKey));
+
+    // Sidebar filter — filters checkbox list + chart points (searches BibTeX fields too)
     document.getElementById('filterSearch')?.addEventListener('input', (e) => {
-        const query = e.target.value.toLowerCase();
+        const query = e.target.value.trim();
+        if (!query) {
+            // Show all, remove highlights
+            document.querySelectorAll('#volcanoList label').forEach(label => {
+                label.style.display = '';
+                const span = label.querySelector('.ref-label-text');
+                if (span) span.innerHTML = span.textContent;
+            });
+            renderChart();
+            return;
+        }
+        // Search across BibTeX fields
+        const matchingKeys = new Set(Refs.searchRefs(query));
+        const qLower = query.toLowerCase();
         document.querySelectorAll('#volcanoList label').forEach(label => {
-            label.style.display = label.textContent.toLowerCase().includes(query) ? '' : 'none';
+            const cb = label.querySelector('input[type="checkbox"]');
+            const volcanoName = cb?.dataset.volcano || '';
+            const textMatch = label.textContent.toLowerCase().includes(qLower);
+            const refMatch = matchingKeys.has(volcanoName);
+            label.style.display = (textMatch || refMatch) ? '' : 'none';
+            // Highlight matching text in label
+            const span = label.querySelector('.ref-label-text');
+            if (span && (textMatch || refMatch)) {
+                const text = span.textContent;
+                const re = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                span.innerHTML = text.replace(re, '<mark>$1</mark>');
+            } else if (span) {
+                span.innerHTML = span.textContent;
+            }
         });
         renderChart();
     });

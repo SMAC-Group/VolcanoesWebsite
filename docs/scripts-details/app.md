@@ -4,7 +4,7 @@
 
 ## Overview
 
-Entry point of the application, loaded via `<script type="module" src="js/app.js">` in `index.html`. Imports all other modules, initializes the UI, loads data, and wires event listeners. Does not export any public API.
+Entry point of the application, loaded via `<script type="module" src="js/app.js">` in `index.html`. Imports all other modules (including `references.js` as `Refs`), initializes the UI, loads data and references in parallel, and wires event listeners. Does not export any public API.
 
 ## Internal State
 
@@ -20,7 +20,7 @@ Entry point of the application, loaded via `<script type="module" src="js/app.js
 ### `init()`
 
 Main initialization function, called automatically at module load:
-1. Calls `fetchVolcanoes()` to load the base CSV
+1. Loads base CSV data and references in parallel (`Promise.all([API.fetchVolcanoes(), Refs.fetchReferences()])`)
 2. Initializes sidebar (axis selectors, volcano filter)
 3. Initializes modals and tutorial
 4. Performs the first chart render
@@ -53,6 +53,7 @@ Builds a `{ volcanoName: color }` mapping using `CONFIG.clusterColors`.
 | `VIEW_CHANGED` | Switches between 2D and 3D rendering |
 | `CORRECTION_MODE_CHANGED` | Enables/disables correction UI |
 | `POINT_CORRECTED` | Re-renders chart to reflect correction |
+| `REF_VIEW_REQUESTED` | Opens the reference viewer modal via `Modals.openReference(csvKey)` |
 
 ## DOM Bindings
 
@@ -63,3 +64,4 @@ Attaches click/change handlers to:
 - Correction mode button
 - Undo/redo buttons
 - Reset 3D view button
+- Sidebar search box (`#filterSearch`): filters volcano checkboxes by name and by BibTeX field matches (via `Refs.searchRefs()`), with `<mark>` highlighting on matching label text

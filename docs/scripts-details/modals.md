@@ -46,3 +46,27 @@ Opens the contribution modal. Provides:
 - Contributor metadata form (name, email, notes)
 - CSV generation for submission
 - Instructions for sending data to the contact email
+
+### `openReference(csvKey)`
+
+Opens the reference viewer modal for a given CSV reference key. Displays all available BibTeX fields (title, authors, journal, year, volume, pages, DOI, URL, publisher, abstract, type) and prepares a formatted citation string for the copy button.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `csvKey` | `string` | Reference key as it appears in the CSV data |
+
+If no reference data is found for the key, shows a warning toast.
+
+### `_initRefModal()`
+
+Wires the "Copy citation" button (`#btnCopyCitation`) in the reference viewer modal. Copies the formatted citation string to the clipboard using the Clipboard API. Called once by `init()` during startup.
+
+## Internal Functions (Reference Viewer)
+
+### `_refRow(label, value)`
+
+Returns an HTML string for a single reference field row, or empty string if value is falsy.
+
+### `_buildCitation(ref)`
+
+Builds a plain-text citation string from a reference object: `Authors (Year). Title. Journal, Volume(Number), Pages. DOI URL`.

@@ -57,6 +57,7 @@ Constants for all event names used across the application:
 | `CORRECTION_MODE_CHANGED` | `'correction:modeChanged'` | `correction.js` | Entered/exited correction mode |
 | `POINT_CORRECTED` | `'correction:pointCorrected'` | `correction.js` | A point was dragged to new position |
 | `FETCH_ERROR` | `'data:fetchError'` | `api.js` | Error fetching base data |
+| `REF_VIEW_REQUESTED` | `'ref:viewRequested'` | `detail-panel.js`, `sidebar.js` | User wants to view a reference's details |
 
 ## Usage
 

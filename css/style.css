@@ -433,6 +433,57 @@ select.axis-pick:focus { border-color: var(--accent); }
 .webgl-warning-steps em { color: var(--muted); font-style: normal; }
 .webgl-warning-note { font-size: 0.68rem; color: var(--teal); margin-top: 16px; }
 
+/* === Reference eye button (sidebar) === */
+.btn-ref-eye {
+    background: none; border: none; color: var(--muted); cursor: pointer;
+    font-size: 0.75rem; padding: 0 2px; margin-left: auto; opacity: 0.4;
+    transition: opacity 0.15s, color 0.15s; line-height: 1; flex-shrink: 0;
+}
+.btn-ref-eye:hover { opacity: 1; color: var(--accent2); }
+
+/* Reference label text (sidebar overflow) */
+.ref-label-text {
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    min-width: 0; flex: 1;
+}
+
+/* Clickable reference link (detail panel) */
+.ref-link {
+    color: var(--accent2); text-decoration: none; cursor: pointer;
+    border-bottom: 1px dashed rgba(240,160,80,0.3);
+    transition: border-color 0.15s, color 0.15s;
+}
+.ref-link:hover { border-bottom-color: var(--accent2); color: #ffc070; }
+
+/* === Reference modal === */
+.ref-modal-content { font-size: 0.72rem; line-height: 1.7; }
+.ref-field.ref-title {
+    font-family: var(--font-head); font-weight: 600; font-size: 0.95rem;
+    color: var(--text); margin-bottom: 12px; line-height: 1.5;
+}
+.ref-row {
+    display: flex; gap: 10px; padding: 5px 0;
+    border-bottom: 1px solid var(--border);
+}
+.ref-row:last-child { border-bottom: none; }
+.ref-key {
+    color: var(--muted); font-size: 0.62rem; text-transform: uppercase;
+    letter-spacing: 0.08em; min-width: 70px; flex-shrink: 0; padding-top: 1px;
+}
+.ref-val { color: var(--text); word-break: break-word; }
+.ref-val a { color: var(--accent); text-decoration: none; }
+.ref-val a:hover { text-decoration: underline; }
+.ref-row.ref-abstract .ref-val {
+    font-size: 0.65rem; color: var(--muted); max-height: 120px;
+    overflow-y: auto; line-height: 1.6;
+}
+
+/* Search highlight */
+mark {
+    background: rgba(232,93,47,0.25); color: var(--accent);
+    padding: 0 1px; border-radius: 2px;
+}
+
 /* === Responsive === */
 @media (max-width: 900px) {
     .layout { grid-template-columns: 1fr !important; grid-template-rows: auto 1fr auto; }

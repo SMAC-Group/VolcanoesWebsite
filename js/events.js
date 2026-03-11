@@ -30,4 +30,5 @@ export const EVT = {
     CORRECTION_MODE_CHANGED: 'correction:modeChanged',
     POINT_CORRECTED: 'correction:pointCorrected',
     FETCH_ERROR: 'data:fetchError',
+    REF_VIEW_REQUESTED: 'ref:viewRequested',
 };

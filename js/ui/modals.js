@@ -6,6 +6,7 @@ import * as Columns from '../columns.js';
 import { CONFIG } from '../config.js';
 import { Events, EVT } from '../events.js';
 import { toast } from './toast.js';
+import * as Refs from '../references.js';
 
 let _pendingUpload = null;
 let _columnMapping = {}; // { csvHeader → appColumn | null }
@@ -25,6 +26,7 @@ export function init() {
     _initManualEntry();
     _initExport();
     _initManage();
+    _initRefModal();
 }
 
 export function openUpload() {
@@ -350,4 +352,77 @@ function _downloadFile(filename, content) {
 
 function _escapeHtml(str) {
     return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// --- Reference viewer ---
+
+let _currentCitation = '';
+
+export function openReference(csvKey) {
+    const ref = Refs.getRef(csvKey);
+    if (!ref || !ref.title) {
+        toast('No reference data available for ' + csvKey, 'warning');
+        return;
+    }
+
+    const titleEl = document.getElementById('refModalTitle');
+    const contentEl = document.getElementById('refModalContent');
+    if (!titleEl || !contentEl) return;
+
+    titleEl.textContent = ref.shortLabel || csvKey;
+
+    const doiLink = ref.doi
+        ? `<a href="https://doi.org/${_escapeHtml(ref.doi)}" target="_blank" rel="noopener">${_escapeHtml(ref.doi)}</a>`
+        : '—';
+    const urlLink = ref.url
+        ? `<a href="${_escapeHtml(ref.url)}" target="_blank" rel="noopener">${_escapeHtml(ref.url)}</a>`
+        : '';
+
+    let html = `<div class="ref-field ref-title">${_escapeHtml(ref.title)}</div>`;
+    html += _refRow('Authors', ref.authors);
+    html += _refRow('Journal', ref.journal);
+    html += _refRow('Year', ref.year);
+    if (ref.volume) html += _refRow('Volume', ref.volume + (ref.number ? `(${ref.number})` : ''));
+    if (ref.pages) html += _refRow('Pages', ref.pages);
+    html += `<div class="ref-row"><span class="ref-key">DOI</span><span class="ref-val">${doiLink}</span></div>`;
+    if (urlLink) html += `<div class="ref-row"><span class="ref-key">URL</span><span class="ref-val">${urlLink}</span></div>`;
+    if (ref.publisher) html += _refRow('Publisher', ref.publisher);
+    if (ref.abstract) html += `<div class="ref-row ref-abstract"><span class="ref-key">Abstract</span><span class="ref-val">${_escapeHtml(ref.abstract)}</span></div>`;
+    if (ref.type) html += _refRow('Type', ref.type);
+
+    contentEl.innerHTML = html;
+
+    // Build citation string for copy
+    _currentCitation = _buildCitation(ref);
+
+    document.getElementById('modalReference')?.classList.add('open');
+}
+
+function _refRow(label, value) {
+    if (!value) return '';
+    return `<div class="ref-row"><span class="ref-key">${label}</span><span class="ref-val">${_escapeHtml(value)}</span></div>`;
+}
+
+function _buildCitation(ref) {
+    let c = ref.authors || '';
+    if (ref.year) c += ` (${ref.year}).`;
+    if (ref.title) c += ` ${ref.title}.`;
+    if (ref.journal) c += ` ${ref.journal}`;
+    if (ref.volume) c += `, ${ref.volume}`;
+    if (ref.number) c += `(${ref.number})`;
+    if (ref.pages) c += `, ${ref.pages}`;
+    c += '.';
+    if (ref.doi) c += ` https://doi.org/${ref.doi}`;
+    return c;
+}
+
+export function _initRefModal() {
+    document.getElementById('btnCopyCitation')?.addEventListener('click', () => {
+        if (_currentCitation) {
+            navigator.clipboard.writeText(_currentCitation).then(
+                () => toast('Citation copied to clipboard', 'success'),
+                () => toast('Could not copy citation', 'error'),
+            );
+        }
+    });
 }

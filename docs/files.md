@@ -75,6 +75,32 @@ Also exports `EVT`: event name constants including `FETCH_ERROR` for data load f
 
 ---
 
+## `js/references.js`
+
+Reference data module. Loads `data/references.json` (built offline by `scripts/build-references.mjs`), indexes all BibTeX fields for fast search, and provides lookup/labeling functions.
+
+**Exports**: `fetchReferences(url?)`, `getRef(csvKey)`, `getShortLabel(csvKey)`, `getDisplayLabel(csvKey)`, `searchRefs(query)`, `getAllKeys()`
+
+---
+
+## `data/references.json`
+
+Pre-built JSON file mapping CSV reference keys to their BibTeX metadata (title, authors, year, journal, DOI, abstract, etc.). Generated from `data/references.bib` by `scripts/build-references.mjs`. Loaded at startup by `js/references.js`.
+
+---
+
+## `data/references.bib`
+
+Source BibTeX file containing all reference entries. Used as input for the build script. Not loaded directly by the browser.
+
+---
+
+## `scripts/build-references.mjs`
+
+Node.js build script that parses `data/references.bib` and produces `data/references.json`. Extracts BibTeX fields, computes `shortLabel` and `displayLabel`, and writes the JSON mapping. Run manually when the `.bib` file changes.
+
+---
+
 ## `js/app.js`
 
 Main orchestrator. Imports all modules and wires up events.

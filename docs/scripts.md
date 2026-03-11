@@ -22,7 +22,7 @@ Lightweight pub/sub system that decouples all modules.
 | `Events.off(event, fn)` | Unsubscribe from an event |
 | `Events.emit(event, data)` | Broadcast an event to all subscribers |
 
-Events used across the app: `DATA_LOADED`, `DATA_UPDATED`, `AXES_CHANGED`, `FILTER_CHANGED`, `SELECTION_CHANGED`, `POINT_CLICKED`, `VIEW_CHANGED`, `CORRECTION_MODE_CHANGED`, `POINT_CORRECTED`, `FETCH_ERROR`.
+Events used across the app: `DATA_LOADED`, `DATA_UPDATED`, `AXES_CHANGED`, `FILTER_CHANGED`, `SELECTION_CHANGED`, `POINT_CLICKED`, `VIEW_CHANGED`, `CORRECTION_MODE_CHANGED`, `POINT_CORRECTED`, `FETCH_ERROR`, `REF_VIEW_REQUESTED`.
 
 ---
 
@@ -65,9 +65,24 @@ Manages the set of selected point indices. Emits `SELECTION_CHANGED` on every mo
 
 ---
 
+### [`references.js`](scripts-details/references.md) — Reference Data
+
+Loads and indexes BibTeX reference metadata from `data/references.json`. Provides lookup, labeling, and full-text search across all BibTeX fields.
+
+| Function | Description |
+|----------|-------------|
+| `fetchReferences(url?)` | Load `references.json` and build search index |
+| `getRef(csvKey)` | Full reference object for a CSV key |
+| `getShortLabel(csvKey)` | Short label, e.g. "Adam & Green (1994)" |
+| `getDisplayLabel(csvKey)` | Display label with truncated title |
+| `searchRefs(query)` | Full-text search across all BibTeX fields; returns matching CSV keys |
+| `getAllKeys()` | All known CSV reference keys |
+
+---
+
 ### [`app.js`](scripts-details/app.md) — Main Orchestrator
 
-Entry point loaded by `index.html`. Imports all modules, calls `init()` to load data and build the UI, then wires all event subscriptions. Manages view state (`2d`/`3d`), ellipse/label toggles, and the color map. Does not export any public API.
+Entry point loaded by `index.html`. Imports all modules (including `references.js`), calls `init()` to load data and references in parallel, then wires all event subscriptions. Manages view state (`2d`/`3d`), ellipse/label toggles, and the color map. Wires `REF_VIEW_REQUESTED` to open the reference modal. The sidebar search box searches across BibTeX fields with match highlighting. Does not export any public API.
 
 ---
 
@@ -140,12 +155,12 @@ Plotly.js `scatter3d` chart with group centroids and WebGL detection.
 
 ### [`ui/detail-panel.js`](scripts-details/detail-panel.md) — Detail Panel
 
-Right sidebar showing point details and selection statistics.
+Right sidebar showing point details and selection statistics. Imports `Events`, `EVT`, and `Refs` to make reference names clickable (emits `REF_VIEW_REQUESTED` to open the reference viewer modal).
 
 | Function | Description |
 |----------|-------------|
 | `updateSelectionInfo(selectedSet, allRows, axes)` | Show count, mean, std dev for selected points |
-| `showPointDetailByIndex(index)` | Show all column values for a single point |
+| `showPointDetailByIndex(index)` | Show all column values for a single point (reference names are clickable links) |
 
 ---
 
@@ -184,6 +199,8 @@ Manages CSV upload, manual entry, data management, export, and contribution moda
 | `openManage()` | Table of user data with per-row delete |
 | `openExport()` | CSV download of user data |
 | `openContribute()` | Contribution form with metadata |
+| `openReference(csvKey)` | Open the reference viewer modal for a given CSV reference key |
+| `_initRefModal()` | Wire the "Copy citation" button in the reference modal (called by `init()`) |
 
 ---
 
