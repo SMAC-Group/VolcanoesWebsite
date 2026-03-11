@@ -5,6 +5,7 @@ import { CONFIG } from '../config.js';
 import * as Columns from '../columns.js';
 import * as Selection from '../selection.js';
 import { Events, EVT } from '../events.js';
+import * as Refs from '../references.js';
 
 const CHART_ID = 'plotDiv';
 let _bindingsAttached = false;
@@ -115,7 +116,7 @@ export function render(rows, xCol, yCol, colorCol, { invertY = false, showEllips
                 traces.push({
                     x: [mx], y: [my - sy * 1.1],
                     mode: 'text', type: 'scatter', showlegend: false, hoverinfo: 'skip', legendgroup: 'ellipses',
-                    text: [name],
+                    text: [Refs.getShortLabel(name) || name],
                     textfont: { color, size: 9, family: t.fontMono },
                 });
             }
@@ -241,7 +242,16 @@ function _tooltip(row) {
     const keys = [...Columns.metaKeys(), ...Columns.tooltipKeys()];
     return keys
         .filter(k => row[k] !== null && row[k] !== undefined)
-        .map(k => `${Columns.label(k)}: ${_fmt(row[k])}`)
+        .map(k => {
+            let val = row[k];
+            // Show readable reference label instead of raw CSV key
+            if (k === 'Reference' && val) {
+                val = Refs.getShortLabel(val) || val;
+            } else {
+                val = _fmt(val);
+            }
+            return `${Columns.label(k)}: ${val}`;
+        })
         .join('<br>');
 }
 

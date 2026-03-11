@@ -87,7 +87,8 @@ function _renderSelectionList(sel) {
     selList.innerHTML = sel.slice(0, 50).map(d => {
         const rawName = nameCol ? (d[nameCol] ?? '?') : `#${d._idx ?? ''}`;
         const name = Refs.getShortLabel(rawName) || rawName;
-        const ref = refCol && d[refCol] ? d[refCol] : '';
+        const rawRef = refCol && d[refCol] ? d[refCol] : '';
+        const ref = rawRef ? (Refs.getShortLabel(rawRef) || rawRef) : '';
         const val = col1 && d[col1] !== null ? `${d[col1]}` : '';
         return `<div class="sel-item" data-idx="${d._idx}">
             <div class="sel-item-info"><span class="sel-item-name">${name}</span>${ref ? `<span class="sel-item-ref">${ref}</span>` : ''}</div>

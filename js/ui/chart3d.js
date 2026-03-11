@@ -5,6 +5,7 @@ import { CONFIG } from '../config.js';
 import * as Columns from '../columns.js';
 import * as Selection from '../selection.js';
 import { Events, EVT } from '../events.js';
+import * as Refs from '../references.js';
 
 const CHART_ID = 'plotDiv';
 
@@ -64,12 +65,21 @@ export function render(rows, xCol, yCol, zCol, colorCol, { showLabels = false, c
 
     // Single base trace
     if (basePts.length) {
+        const refCol = Columns.metaKeys()[0]; // 'Reference'
+        const hoverLabels = basePts.map(p => {
+            const refKey = refCol ? p[refCol] : null;
+            return refKey ? (Refs.getShortLabel(refKey) || refKey) : '';
+        });
         traces.push({
             x: basePts.map(p => p[xCol]),
             y: basePts.map(p => p[yCol]),
             z: basePts.map(p => p[zCol]),
             customdata: basePts.map(p => p._idx),
-            text: showLabels ? basePts.map(p => p[colorCol] ?? '') : undefined,
+            text: showLabels ? basePts.map(p => {
+                const refKey = p[colorCol] ?? '';
+                return Refs.getShortLabel(refKey) || refKey;
+            }) : undefined,
+            hovertext: hoverLabels,
             name: 'Base data',
             legendrank: 1,
             mode: showLabels ? 'markers+text' : 'markers',
@@ -79,7 +89,7 @@ export function render(rows, xCol, yCol, zCol, colorCol, { showLabels = false, c
                 size: 4,
                 color: basePts.map(p => colorMap[p[colorCol] ?? 'N/A']),
             },
-            hovertemplate: `%{customdata}<br>${Columns.label(xCol)}=%{x:.2f}<br>${Columns.label(yCol)}=%{y:.2f}<br>${Columns.label(zCol)}=%{z:.2f}<extra></extra>`,
+            hovertemplate: `%{hovertext}<br>${Columns.label(xCol)}=%{x:.2f}<br>${Columns.label(yCol)}=%{y:.2f}<br>${Columns.label(zCol)}=%{z:.2f}<extra></extra>`,
         });
     }
 
@@ -108,7 +118,7 @@ export function render(rows, xCol, yCol, zCol, colorCol, { showLabels = false, c
         centroids.x.push(avg(pts.map(p => p[xCol])));
         centroids.y.push(avg(pts.map(p => p[yCol])));
         centroids.z.push(avg(pts.map(p => p[zCol])));
-        centroids.text.push(name);
+        centroids.text.push(Refs.getShortLabel(name) || name);
         centroids.colors.push(colorMap[name]);
     });
 
