@@ -37,6 +37,7 @@ export function getShortLabel(csvKey) {
 
 /** Get display label: "Adam & Green (1994) — The effects of pressure..." */
 export function getDisplayLabel(csvKey) {
+    if (!csvKey) return csvKey;
     return _refMap[csvKey]?.displayLabel || csvKey.replace(/_/g, ' ');
 }
 
