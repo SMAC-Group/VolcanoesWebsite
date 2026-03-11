@@ -49,13 +49,36 @@ function parseFields(body) {
 
 // ── Extract unique refs from CSV ──
 
+function parseCsvRow(line) {
+  const cols = [];
+  let current = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      inQuotes = !inQuotes;
+    } else if (ch === ',' && !inQuotes) {
+      cols.push(current);
+      current = '';
+    } else {
+      current += ch;
+    }
+  }
+  cols.push(current);
+  return cols;
+}
+
 function extractCsvRefs(csvPath) {
   const csv = readFileSync(csvPath, 'utf-8');
   const lines = csv.split('\n');
+  const headers = parseCsvRow(lines[0]);
+  const refIdx = headers.indexOf('Reference');
   const refs = new Set();
   for (let i = 1; i < lines.length; i++) {
-    const cols = lines[i].split(',');
-    if (cols[1] && cols[1].trim()) refs.add(cols[1].trim());
+    if (!lines[i].trim()) continue;
+    const cols = parseCsvRow(lines[i]);
+    const val = cols[refIdx]?.trim();
+    if (val) refs.add(val);
   }
   return [...refs].sort();
 }
