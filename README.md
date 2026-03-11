@@ -45,6 +45,7 @@ python -m http.server 8000
 | [UI Components](docs/ui.md) | Sidebar, 2D/3D charts, detail panel, modals |
 | [Data Format](docs/data.md) | CSV structure, columns, types, missing value handling |
 | [Contributing](docs/contributing.md) | Data contribution workflow and adding dimensions |
+| [Scripts Reference](docs/scripts.md) | What each JS file does, key functions, and links to detailed API docs |
 
 ## Project Structure
 
