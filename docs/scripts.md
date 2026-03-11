@@ -196,21 +196,3 @@ Step-by-step onboarding overlay. Auto-starts on first visit.
 | `init()` | Create overlay DOM, auto-start on first visit |
 | `start()` | Start tutorial from step 0 |
 
----
-
-## Utility Scripts
-
-### [`scripts/fetch_bibtex.mjs`](scripts-details/fetch_bibtex.md) — BibTeX Reference Fetcher
-
-Node.js CLI script (not part of the frontend). Extracts references from `volcanoData.csv`, queries CrossRef API, scores results by author match and geology relevance, then outputs `data/references.bib` and `data/references_review.md`.
-
-Run with: `node scripts/fetch_bibtex.mjs`
-
-| Function | Description |
-|----------|-------------|
-| `extractUniqueRefs(csvPath)` | Parse CSV and return sorted unique reference strings |
-| `parseRefString(refStr)` | Parse `"Author_Year"` into `{ firstAuthor, year, ... }` |
-| `queryCrossRef(firstAuthor, allAuthors, year)` | Search CrossRef API for matching works |
-| `scoreItem(firstAuthor, allAuthors, item)` | Rank a CrossRef result by author + geo-relevance |
-| `fetchBibtex(doi)` | Get BibTeX entry via DOI content negotiation |
-| `main()` | Orchestrate the full fetch-score-classify-export pipeline |
