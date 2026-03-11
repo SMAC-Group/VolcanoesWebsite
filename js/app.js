@@ -52,7 +52,7 @@ async function init() {
     // --- Wire events ---
 
     // Gradient color picker
-    document.getElementById('gradientColor')?.addEventListener('input', () => renderChart());
+    document.getElementById('gradientColor')?.addEventListener('change', () => renderChart());
 
     // Axis / color / filter changes
     ['axisX', 'axisY', 'axisZ', 'colorSelect', 'invertY'].forEach(id => {

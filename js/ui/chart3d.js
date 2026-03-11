@@ -75,9 +75,15 @@ export function render(rows, xCol, yCol, zCol, colorCol, { showLabels = false, c
 
         const markerOpts = { size: 4 };
         if (numericColor) {
-            const colorVals = basePts.map(p => p[colorCol]).filter(v => v !== null && typeof v === 'number');
-            const cmin = colorVals.length ? Math.min(...colorVals) : 0;
-            const cmax = colorVals.length ? Math.max(...colorVals) : 1;
+            let cmin = Infinity, cmax = -Infinity;
+            for (const p of basePts) {
+                const v = p[colorCol];
+                if (typeof v === 'number') {
+                    if (v < cmin) cmin = v;
+                    if (v > cmax) cmax = v;
+                }
+            }
+            if (!isFinite(cmin)) { cmin = 0; cmax = 1; }
             markerOpts.color = basePts.map(p => p[colorCol] ?? null);
             markerOpts.colorscale = COLORSCALE;
             markerOpts.cmin = cmin;
