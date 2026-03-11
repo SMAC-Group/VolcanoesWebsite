@@ -112,6 +112,13 @@ select.axis-pick:focus { border-color: var(--accent); }
 .checkbox-row { display: flex; align-items: center; gap: 6px; font-size: 0.65rem; color: var(--muted); margin-top: 8px; cursor: pointer; }
 .color-row { display: flex; align-items: center; gap: 5px; }
 .color-row select.axis-pick { flex: 1; }
+.color-picker {
+    width: 26px; height: 26px; border: 1px solid var(--border); border-radius: 4px;
+    padding: 1px; cursor: pointer; background: var(--bg3);
+    transition: border-color 0.15s;
+}
+.color-picker:hover { border-color: var(--accent); }
+.color-picker.hidden { display: none; }
 .btn-icon {
     background: var(--bg3); border: 1px solid var(--border); color: var(--muted);
     padding: 3px 6px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; line-height: 1;

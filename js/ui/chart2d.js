@@ -20,7 +20,7 @@ const _hasWebGL = (() => {
 })();
 const SCATTER_TYPE = _hasWebGL ? 'scattergl' : 'scatter';
 
-export function render(rows, xCol, yCol, colorCol, { invertY = false, showEllipses = true, showLabels = false, colorMap = null } = {}) {
+export function render(rows, xCol, yCol, colorCol, { invertY = false, showEllipses = true, showLabels = false, colorMap = null, numericColor = false, gradientColor = '#e85d2f' } = {}) {
     // Remove any WebGL warning overlay left by 3D view
     document.getElementById(CHART_ID)?.querySelector('.webgl-warning')?.remove();
 
@@ -31,8 +31,8 @@ export function render(rows, xCol, yCol, colorCol, { invertY = false, showEllips
         .map((r, i) => ({ ...r, _idx: r._idx ?? i }))
         .filter(r => r[xCol] !== null && r[yCol] !== null);
 
-    // Use provided color map or build a local one
-    if (!colorMap) {
+    // Use provided color map or build a local one (categorical mode)
+    if (!numericColor && !colorMap) {
         const groupSet = [...new Set(valid.map(r => r[colorCol] ?? 'N/A'))];
         colorMap = {};
         groupSet.forEach((name, i) => {
@@ -46,8 +46,37 @@ export function render(rows, xCol, yCol, colorCol, { invertY = false, showEllips
 
     const traces = [];
 
+    // Continuous colorscale: white → chosen color
+    const COLORSCALE = [[0, '#ffffff'], [1, gradientColor]];
+
     // Single base trace (scattergl for performance)
     if (basePts.length) {
+        const markerOpts = {
+            symbol: 'triangle-up',
+            size: 7,
+            opacity: 0.8,
+        };
+        if (numericColor) {
+            const colorVals = basePts.map(p => p[colorCol]).filter(v => v !== null && typeof v === 'number');
+            const cmin = colorVals.length ? Math.min(...colorVals) : 0;
+            const cmax = colorVals.length ? Math.max(...colorVals) : 1;
+            markerOpts.color = basePts.map(p => p[colorCol] ?? null);
+            markerOpts.colorscale = COLORSCALE;
+            markerOpts.cmin = cmin;
+            markerOpts.cmax = cmax;
+            markerOpts.showscale = true;
+            markerOpts.colorbar = {
+                title: { text: Columns.label(colorCol), font: { size: 10 } },
+                thickness: 12,
+                len: 0.6,
+                tickfont: { size: 9, color: t.muted },
+                bordercolor: t.border,
+                borderwidth: 1,
+            };
+        } else {
+            markerOpts.color = basePts.map(p => colorMap[p[colorCol] ?? 'N/A']);
+        }
+
         traces.push({
             x: basePts.map(p => p[xCol]),
             y: basePts.map(p => p[yCol]),
@@ -57,12 +86,7 @@ export function render(rows, xCol, yCol, colorCol, { invertY = false, showEllips
             legendrank: 1,
             mode: 'markers',
             type: SCATTER_TYPE,
-            marker: {
-                symbol: 'triangle-up',
-                size: 7,
-                color: basePts.map(p => colorMap[p[colorCol] ?? 'N/A']),
-                opacity: 0.8,
-            },
+            marker: markerOpts,
             hovertemplate: '%{text}<extra></extra>',
         });
     }
@@ -88,8 +112,8 @@ export function render(rows, xCol, yCol, colorCol, { invertY = false, showEllips
         });
     }
 
-    // Ellipses (SVG overlay, only for groups with enough points)
-    if (showEllipses) {
+    // Ellipses (SVG overlay, only for categorical groups with enough points)
+    if (showEllipses && !numericColor) {
         const groups = _groupBy(basePts, colorCol);
         Object.entries(groups).forEach(([name, pts]) => {
             if (pts.length < 5) return;

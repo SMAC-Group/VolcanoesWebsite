@@ -43,21 +43,23 @@ export function showNoWebGLWarning() {
     el.appendChild(box);
 }
 
-export function render(rows, xCol, yCol, zCol, colorCol, { showLabels = false, colorMap = null } = {}) {
+export function render(rows, xCol, yCol, zCol, colorCol, { showLabels = false, colorMap = null, numericColor = false, gradientColor = '#e85d2f' } = {}) {
     const t = CONFIG.theme;
 
     const valid = rows
         .map((r, i) => ({ ...r, _idx: r._idx ?? i }))
         .filter(r => r[xCol] !== null && r[yCol] !== null && r[zCol] !== null);
 
-    // Use provided color map or build a local one
-    if (!colorMap) {
+    // Use provided color map or build a local one (categorical mode)
+    if (!numericColor && !colorMap) {
         const groupSet = [...new Set(valid.map(r => r[colorCol] ?? 'N/A'))];
         colorMap = {};
         groupSet.forEach((name, i) => {
             colorMap[name] = CONFIG.clusterColors[i % CONFIG.clusterColors.length];
         });
     }
+
+    const COLORSCALE = [[0, '#ffffff'], [1, gradientColor]];
 
     const basePts = valid.filter(r => r._source !== 'user');
     const userPts = valid.filter(r => r._source === 'user');
@@ -70,6 +72,29 @@ export function render(rows, xCol, yCol, zCol, colorCol, { showLabels = false, c
             const refKey = refCol ? p[refCol] : null;
             return refKey ? (Refs.getShortLabel(refKey) || refKey) : '';
         });
+
+        const markerOpts = { size: 4 };
+        if (numericColor) {
+            const colorVals = basePts.map(p => p[colorCol]).filter(v => v !== null && typeof v === 'number');
+            const cmin = colorVals.length ? Math.min(...colorVals) : 0;
+            const cmax = colorVals.length ? Math.max(...colorVals) : 1;
+            markerOpts.color = basePts.map(p => p[colorCol] ?? null);
+            markerOpts.colorscale = COLORSCALE;
+            markerOpts.cmin = cmin;
+            markerOpts.cmax = cmax;
+            markerOpts.showscale = true;
+            markerOpts.colorbar = {
+                title: { text: Columns.label(colorCol), font: { size: 10 } },
+                thickness: 12,
+                len: 0.6,
+                tickfont: { size: 9, color: t.muted },
+                bordercolor: t.border,
+                borderwidth: 1,
+            };
+        } else {
+            markerOpts.color = basePts.map(p => colorMap[p[colorCol] ?? 'N/A']);
+        }
+
         traces.push({
             x: basePts.map(p => p[xCol]),
             y: basePts.map(p => p[yCol]),
@@ -84,11 +109,8 @@ export function render(rows, xCol, yCol, zCol, colorCol, { showLabels = false, c
             legendrank: 1,
             mode: showLabels ? 'markers+text' : 'markers',
             type: 'scatter3d',
-            textfont: { size: 7, color: basePts.map(p => colorMap[p[colorCol] ?? 'N/A']) },
-            marker: {
-                size: 4,
-                color: basePts.map(p => colorMap[p[colorCol] ?? 'N/A']),
-            },
+            textfont: { size: 7, color: numericColor ? t.muted : basePts.map(p => colorMap[p[colorCol] ?? 'N/A']) },
+            marker: markerOpts,
             hovertemplate: `%{hovertext}<br>${Columns.label(xCol)}=%{x:.2f}<br>${Columns.label(yCol)}=%{y:.2f}<br>${Columns.label(zCol)}=%{z:.2f}<extra></extra>`,
         });
     }
@@ -109,8 +131,9 @@ export function render(rows, xCol, yCol, zCol, colorCol, { showLabels = false, c
         });
     }
 
-    // Centroids
-    const groups = _groupBy(basePts, colorCol);
+    // Centroids (only for categorical color)
+    if (numericColor) { /* skip centroids for continuous color */ }
+    const groups = numericColor ? {} : _groupBy(basePts, colorCol);
     const centroids = { x: [], y: [], z: [], text: [], colors: [] };
     Object.entries(groups).forEach(([name, pts]) => {
         if (pts.length === 0) return;

@@ -19,6 +19,7 @@ let currentView = '2d';
 let showEllipses = true;
 let showLabels = false;
 let _colorMap = null;
+let _numericColor = false;
 
 async function init() {
     // Load base data and references in parallel
@@ -50,10 +51,13 @@ async function init() {
 
     // --- Wire events ---
 
+    // Gradient color picker
+    document.getElementById('gradientColor')?.addEventListener('input', () => renderChart());
+
     // Axis / color / filter changes
     ['axisX', 'axisY', 'axisZ', 'colorSelect', 'invertY'].forEach(id => {
         document.getElementById(id)?.addEventListener('change', () => {
-            if (id === 'colorSelect') _colorMap = null; // rebuild on color column change
+            if (id === 'colorSelect') { _colorMap = null; _numericColor = false; } // rebuild on color column change
             // Auto-invert Y axis for pressure-like columns
             if (id === 'axisY') {
                 const yVal = document.getElementById('axisY').value;
@@ -183,7 +187,7 @@ async function init() {
     Events.on(EVT.DATA_UPDATED, () => {
         Sidebar.initAxisSelectors();
         Sidebar.initVolcanoFilter();
-        _colorMap = null; // rebuild color map with new data
+        _colorMap = null; _numericColor = false; // rebuild color map with new data
         _updateCacheWarning();
         _updateTotalCount();
         renderChart();
@@ -226,6 +230,10 @@ async function init() {
     Events.emit(EVT.DATA_LOADED);
 }
 
+function _isNumericColumn(col, rows) {
+    return rows.some(r => typeof r[col] === 'number');
+}
+
 function _buildColorMap(colorCol, rows) {
     const groupSet = [...new Set(rows.map(r => r[colorCol] ?? 'N/A'))];
     const map = {};
@@ -237,7 +245,8 @@ function _buildColorMap(colorCol, rows) {
 
 function refreshColors() {
     const axes = Sidebar.getAxes();
-    _colorMap = _buildColorMap(axes.color, _getFilteredRows());
+    _numericColor = _isNumericColumn(axes.color, API.getAllRows());
+    _colorMap = _numericColor ? {} : _buildColorMap(axes.color, _getFilteredRows());
     renderChart();
 }
 
@@ -247,7 +256,20 @@ function renderChart() {
     _updateTotalCount(rows.length);
 
     // Build stable color map if not yet initialized or color column changed
-    if (!_colorMap) _colorMap = _buildColorMap(axes.color, API.getAllRows());
+    if (!_colorMap) {
+        _numericColor = _isNumericColumn(axes.color, API.getAllRows());
+        if (!_numericColor) {
+            _colorMap = _buildColorMap(axes.color, API.getAllRows());
+        } else {
+            _colorMap = {}; // not used for numeric, but prevents re-init
+        }
+    }
+
+    // Show/hide gradient color picker
+    const pickerEl = document.getElementById('gradientColor');
+    if (pickerEl) pickerEl.classList.toggle('hidden', !_numericColor);
+
+    const gradientColor = pickerEl?.value || CONFIG.theme.accent;
 
     // Apply pending corrections to rendered data
     if (Correction.isActive()) {
@@ -266,7 +288,7 @@ function renderChart() {
         _showChartSpinner();
         // Defer render so the browser paints the spinner first
         setTimeout(() => {
-            Chart3D.render(rows, axes.x, axes.y, axes.z, axes.color, { showLabels, colorMap: _colorMap });
+            Chart3D.render(rows, axes.x, axes.y, axes.z, axes.color, { showLabels, colorMap: _numericColor ? null : _colorMap, numericColor: _numericColor, gradientColor });
             _hideChartSpinner();
             document.body.classList.remove('loading');
         }, 20);
@@ -275,7 +297,9 @@ function renderChart() {
             invertY: axes.invertY,
             showEllipses,
             showLabels,
-            colorMap: _colorMap,
+            colorMap: _numericColor ? null : _colorMap,
+            numericColor: _numericColor,
+            gradientColor,
         });
         if (Correction.isActive()) Correction.reattach();
         document.body.classList.remove('loading');
